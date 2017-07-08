@@ -1,0 +1,32 @@
+This file is to keep track of the expected results while modifying the
+program. After each major change, and before submitting to github, reverify
+correctness by running with these settings and check that the output is as
+expected.
+
+%for FUCCI data
+%GetProcessedDataParts
+load('FUCCI_April2017.mat')
+%data=imt_b;
+data=G2Time_b;
+%data=G1Time_b;
+
+>> pd_max
+
+pd_max =
+
+    0.3582    0.0003    0.1113    0.0887
+
+>> confint_max
+
+confint_max =
+
+   1.0e+03 *
+
+   -0.0001
+    0.0008
+   -1.2290
+    1.2290
+    0.0001
+    0.0002
+    0.0000
+    0.0001
