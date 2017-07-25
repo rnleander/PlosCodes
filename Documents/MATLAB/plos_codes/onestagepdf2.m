@@ -3,6 +3,11 @@ function Y=onestagepdf2(t,mu,s)
 % at each point in t and return a list Y with the value cooresponding
 % to the points in t
 
+% reflect the objective fuction about the axis to allow unconstrained
+% optimization
+mu=abs(mu);
+s=abs(s);
+
 Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
 
 %The pdf may return values that are zero to witin machine error

@@ -10,8 +10,8 @@ eps=.01;
 
 m=[m1 m2 m3];
 s=[s1 s2 s3];
-m=max(0,m);
-s=max(0,s);
+m=abs(m);
+s=abs(s);
 v=(s.^2)./(m.^3);
 [v,I]=sort(v);
 sd=v.^.5;
