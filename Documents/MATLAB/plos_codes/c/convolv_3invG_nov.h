@@ -22,12 +22,15 @@
 #include "rtwtypes.h"
 #include "omp.h"
 #include "IMT_analysis_April2017_types.h"
+#include "gsl/gsl_multimin.h"
+
 
 /* Function Declarations */
 extern void b_convolv_3invG_nov(double m1, double s1, double m2, double s2,
   double m3, double s3, double P[266], double *h, double *flag, double *E);
 extern void c_convolv_3invG_nov(double m1, double s1, double m2, double s2,
   double m3, double s3, double P[266], double *h, double *flag, double *E);
+extern double convolv_3invG_nov_loglikelihood(const gsl_vector *v, void *params);
 extern void convolv_3invG_nov(double m1, double s1, double m2, double s2, double
   m3, double s3, double P[266]);
 

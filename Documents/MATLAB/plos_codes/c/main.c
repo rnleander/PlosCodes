@@ -40,6 +40,14 @@
 #include "IMT_analysis_April2017_terminate.h"
 #include "IMT_analysis_April2017_initialize.h"
 
+
+#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_poly.h>
+
+
+
+
+
 /* Function Declarations */
 static void main_IMT_analysis_April2017(const char *);
 
@@ -55,6 +63,10 @@ int main(int argc, const char * const argv[])
   (void)argc;
   (void)argv;
 
+  
+
+	  
+
   /* Initialize the application.
      You do not need to do this more than one time. */
   IMT_analysis_April2017_initialize();
@@ -67,8 +79,7 @@ int main(int argc, const char * const argv[])
   else {
 	  printf("invalid number of arguments, please specify model\n");
   }
-  /* Terminate the application.
-     You do not need to do this more than one time. */
+
   IMT_analysis_April2017_terminate();
   return 0;
 }

@@ -12,7 +12,6 @@
 /* Include files */
 #include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
-#include "fprintf.h"
 #include "sum.h"
 #include "log.h"
 #include "emgpdf.h"
@@ -22,6 +21,11 @@
 #include "convolv_2invG_adapt_nov.h"
 #include "convolv_3invG_nov.h"
 #include "strcmp.h"
+#include "gsl/gsl_multimin.h"
+#include "gsl/gsl_statistics_double.h"
+
+#define _GSL_MINIMIZE
+#define _VERBOSE
 
 /* Type Definitions */
 #ifndef typedef_cell_wrap_3
@@ -40,6 +44,13 @@ typedef struct {
  */
 void IMT_analysis_April2017(const char *model)
 {
+
+#ifdef _GSL_MINIMIZE
+	printf("Using GSL minimizer\n");
+#else
+	printf("Using Matlab's fminsearch\n");
+#endif
+
   int twostagefitnomle;
   int onestagelagnomle;
   int onestagefitnomle;
@@ -47,45 +58,17 @@ void IMT_analysis_April2017(const char *model)
   int threestagefitnomle;
   int itmp;
   double P[81];
-  static const double dv0[3] = { 0.33974072418417528, 1.1914141706050716, 2.9434210526315785 };
-  static const double dv1[3] = { 0.33974072418417528, 1.1914141706050716, 5.886842105263157 };
-  static const double dv2[3] = { 0.33974072418417528, 1.1914141706050716, 8.8302631578947359 };
-  static const double dv3[3] = { 0.33974072418417528, 1.6849140784731846, 2.9434210526315785 };
-  static const double dv4[3] = { 0.33974072418417528, 1.6849140784731846, 5.886842105263157 };
-  static const double dv5[3] = { 0.33974072418417528, 1.6849140784731846, 8.8302631578947359 };
-  static const double dv6[3] = { 0.33974072418417528, 2.0635898763455183, 2.9434210526315785 };
-  static const double dv7[3] = { 0.33974072418417528, 2.0635898763455183, 5.886842105263157 };
-  static const double dv8[3] = { 0.33974072418417528, 2.0635898763455183, 8.8302631578947359 };
-  static const double dv9[3] = { 0.16987036209208764, 1.1914141706050716, 2.9434210526315785 };
+
+
 
   double mtmp;
-  double le[27];
-  static const double dv10[3] = { 0.16987036209208764, 1.1914141706050716, 5.886842105263157 };
-  static const double dv11[3] = { 0.16987036209208764, 1.1914141706050716, 8.8302631578947359 };
-  static const double dv12[3] = { 0.16987036209208764, 1.6849140784731846, 2.9434210526315785 };
 
   int ix;
-  static const double dv13[3] = { 0.16987036209208764, 1.6849140784731846, 5.886842105263157 };
-
   boolean_T exitg1;
-  static const double dv14[3] = { 0.16987036209208764, 1.6849140784731846, 8.8302631578947359 };
-  static const double dv15[3] = { 0.16987036209208764, 2.0635898763455183, 2.9434210526315785 };
-  static const double dv16[3] = { 0.16987036209208764, 2.0635898763455183, 5.886842105263157 };
-  static const double dv17[3] = { 0.16987036209208764, 2.0635898763455183, 8.8302631578947359 };
-
   double p[3];
-  static const double dv18[3] = { 0.11324690806139176, 1.1914141706050716, 2.9434210526315785 };
-  static const double dv19[3] = { 0.11324690806139176, 1.1914141706050716, 5.886842105263157 };
-  static const double dv20[3] = { 0.11324690806139176, 1.1914141706050716, 8.8302631578947359 };
-
   double ep[81];
-  static const double dv21[3] = { 0.11324690806139176, 1.6849140784731846, 2.9434210526315785 };
-  static const double dv22[3] = { 0.11324690806139176, 1.6849140784731846, 5.886842105263157 };
-  static const double dv23[3] = { 0.11324690806139176, 1.6849140784731846, 8.8302631578947359 };
-  static const double dv24[3] = { 0.11324690806139176, 2.0635898763455183, 2.9434210526315785 };
-  static const double dv25[3] = { 0.11324690806139176, 2.0635898763455183, 5.886842105263157 };
-  static const double dv26[3] = { 0.11324690806139176, 2.0635898763455183, 8.8302631578947359 };
 
+  /*
   static const double dv27[266] = { 11.9, 10.6, 11.6, 9.8, 9.3, 9.0, 11.6, 11.1,
     12.4, 13.7, 12.4, 11.9, 10.3, 12.9, 14.7, 11.6, 13.4, 13.4, 11.6, 10.3, 9.3,
     13.7, 9.6, 10.1, 9.8, 10.9, 16.0, 9.3, 9.6, 10.3, 11.4, 10.6, 8.5, 10.3,
@@ -107,19 +90,25 @@ void IMT_analysis_April2017(const char *model)
     12.4, 10.1, 8.0, 9.0, 9.3, 13.2, 11.1, 12.7, 12.1, 10.1, 13.2, 14.5, 10.1,
     12.7, 12.9, 11.9, 12.4, 11.1, 8.5, 14.5, 16.5, 12.4, 9.0, 11.1, 9.8, 11.1,
     11.1, 8.8, 13.2, 17.6, 16.8, 10.9, 12.4, 8.5, 14.7 };
+	*/
+
 
   double l[266];
   double b_P[32];
+
+  /*
   static const double dv28[2] = { 0.04246759052302191, 0.11796527321068413 };
   static const double dv29[2] = { 0.08493518104604382, 0.029491318302671033 };
-
-  double ld[16];
   static const double dv30[2] = { 0.12740277156906574, 0.029491318302671033 };
   static const double dv31[2] = { 0.12740277156906574, 0.058982636605342066 };
   static const double dv32[2] = { 0.16987036209208764, 0.029491318302671033 };
+  static const double dv33[2] = { 0.16987036209208764, 0.058982636605342066 };
+  */
+
+  double ld[16];
+
 
   double b_p[2];
-  static const double dv33[2] = { 0.16987036209208764, 0.058982636605342066 };
 
   double pd[32];
   static const double dv34[3] = { 0.027593515034192811, 0.043688113214883209, 0.67839610301742326 };
@@ -278,660 +267,591 @@ void IMT_analysis_April2017(const char *model)
   /* 'IMT_analysis_April2017:99' C2 = var(data); */
   /* 'IMT_analysis_April2017:100' C3 = sum((data-C1).^3)/(length(data)); */
   /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-  /* Fit the EMG model with fminsearch */
-  /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    */
-  /* 'IMT_analysis_April2017:164' if emgfitnomle == 1 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* Fit the EMG model */
   if (emgfitnomle == 1) {
-    /*  BEGIN FUNCTION FIT_EMG */
-    /*  Input parameters: C1, C2, data */
-    /*  Outputs:  */
-    /* 'IMT_analysis_April2017:168' fprintf('emgfitnomle\n\n'); */
-    //c_cfprintf();
+
 	printf("emgfitnomle\n\n");
 
-    /*  prepare statistical variables */
-    /* 'IMT_analysis_April2017:170' vry = [.25 .5 .75]'; */
-    /* 'IMT_analysis_April2017:171' c1=C1*vry; */
-    /* 'IMT_analysis_April2017:172' c2=C2*vry; */
-    /* we vary the parameters so the the Gaussian and exponential parts of */
-    /* the cell cycle are responsible for a fraction of the total mean and */
-    /* variance in the IMT. */
-    /* 'IMT_analysis_April2017:176' lam_v=1./c1; */
-    /* 'IMT_analysis_April2017:177' mu_v=c1; */
-    /* 'IMT_analysis_April2017:178' sig_v=c2.^.5; */
-    /* 'IMT_analysis_April2017:179' N = length(vry); */
-    /*  prepare parameter seeds */
-    /* 'IMT_analysis_April2017:182' pp = cell(N^3); */
-    /* 'IMT_analysis_April2017:183' for i = 1:N */
-    /* 'IMT_analysis_April2017:184' for j = 1:N */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:184' for j = 1:N */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:184' for j = 1:N */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:185' for k = 1:N */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:186' pp{N^2*(i-1)+N*(j-1)+k} = [lam_v(i), sig_v(j), mu_v(k)]; */
-    /* 'IMT_analysis_April2017:190' P = zeros(N^3,3); */
-    /* 'IMT_analysis_April2017:191' for ii = 1:N^3 */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:192' P(ii,:) = pp{ii}; */
+	/* prepare statistical variables */
+	double mean = gsl_stats_mean(data, 1, 266);
+	double variance = gsl_stats_variance(data, 1, 266);
+	double vry[3] = { 0.25, 0.5, 0.75 };
 
-	
-    for (itmp = 0; itmp < 3; itmp++) {
-      P[27 * itmp] = dv0[itmp];
-      P[1 + 27 * itmp] = dv1[itmp];
-      P[2 + 27 * itmp] = dv2[itmp];
-      P[3 + 27 * itmp] = dv3[itmp];
-      P[4 + 27 * itmp] = dv4[itmp];
-      P[5 + 27 * itmp] = dv5[itmp];
-      P[6 + 27 * itmp] = dv6[itmp];
-      P[7 + 27 * itmp] = dv7[itmp];
-      P[8 + 27 * itmp] = dv8[itmp];
-      P[9 + 27 * itmp] = dv9[itmp];
-      P[10 + 27 * itmp] = dv10[itmp];
-      P[11 + 27 * itmp] = dv11[itmp];
-      P[12 + 27 * itmp] = dv12[itmp];
-      P[13 + 27 * itmp] = dv13[itmp];
-      P[14 + 27 * itmp] = dv14[itmp];
-      P[15 + 27 * itmp] = dv15[itmp];
-      P[16 + 27 * itmp] = dv16[itmp];
-      P[17 + 27 * itmp] = dv17[itmp];
-      P[18 + 27 * itmp] = dv18[itmp];
-      P[19 + 27 * itmp] = dv19[itmp];
-      P[20 + 27 * itmp] = dv20[itmp];
-      P[21 + 27 * itmp] = dv21[itmp];
-      P[22 + 27 * itmp] = dv22[itmp];
-      P[23 + 27 * itmp] = dv23[itmp];
-      P[24 + 27 * itmp] = dv24[itmp];
-      P[25 + 27 * itmp] = dv25[itmp];
-      P[26 + 27 * itmp] = dv26[itmp];
-    }
-
-    /*  optimize parameters */
-    /* 'IMT_analysis_April2017:196' ep = zeros(N^3,3); */
-    /* 'IMT_analysis_April2017:197' le = -realmax*ones(N^3,1); */
-    /* 'IMT_analysis_April2017:198' options = statset('MaxIter',10000, 'MaxFunEvals',10000); */
-    /* 'IMT_analysis_April2017:199' for i=1:length(P) */
-
-	double emgSeeds[27][3] = {
-		{ 0.33974072418417528, 1.1914141706050716, 5.886842105263157 },
-		{ 0.33974072418417528, 1.1914141706050716, 8.8302631578947359 },
-		{ 0.33974072418417528, 1.6849140784731846, 2.9434210526315785 },
-		{ 0.33974072418417528, 1.6849140784731846, 5.886842105263157 },
-		{ 0.33974072418417528, 1.6849140784731846, 8.8302631578947359 },
-		{ 0.33974072418417528, 2.0635898763455183, 2.9434210526315785 },
-		{ 0.33974072418417528, 2.0635898763455183, 5.886842105263157 },
-		{ 0.33974072418417528, 2.0635898763455183, 8.8302631578947359 },
-		{ 0.16987036209208764, 1.1914141706050716, 2.9434210526315785 },
-		{ 0.16987036209208764, 1.1914141706050716, 5.886842105263157 },
-		{ 0.16987036209208764, 1.1914141706050716, 8.8302631578947359 },
-		{ 0.16987036209208764, 1.6849140784731846, 2.9434210526315785 },
-		{ 0.16987036209208764, 1.6849140784731846, 5.886842105263157 },
-		{ 0.16987036209208764, 1.6849140784731846, 8.8302631578947359 },
-		{ 0.16987036209208764, 2.0635898763455183, 2.9434210526315785 },
-		{ 0.16987036209208764, 2.0635898763455183, 5.886842105263157 },
-		{ 0.16987036209208764, 2.0635898763455183, 8.8302631578947359 },
-		{ 0.11324690806139176, 1.1914141706050716, 2.9434210526315785 },
-		{ 0.11324690806139176, 1.1914141706050716, 5.886842105263157 },
-		{ 0.11324690806139176, 1.1914141706050716, 8.8302631578947359 },
-		{ 0.11324690806139176, 1.6849140784731846, 2.9434210526315785 },
-		{ 0.11324690806139176, 1.6849140784731846, 5.886842105263157 },
-		{ 0.11324690806139176, 1.6849140784731846, 8.8302631578947359 },
-		{ 0.11324690806139176, 2.0635898763455183, 2.9434210526315785 },
-		{ 0.11324690806139176, 2.0635898763455183, 5.886842105263157 },
-		{ 0.11324690806139176, 2.0635898763455183, 8.8302631578947359 } };
-
-
-
-	/*
-	for (int i = 0; i < 27; i++) {
-		printf("[%f %f %f]\n", emgSeeds[i][0], emgSeeds[i][1], emgSeeds[i][2]);
-	}
+	/*we vary the parameters so the the Gaussian and exponential parts of
+	the cell cycle are responsible for a fraction of the total mean and
+	variance in the IMT.
 	*/
+	double lambda[3];
+	for (int i = 0; i < 3; i++) 
+		lambda[i] = 1.0 / (mean*vry[i]);
 
-    for (emgfitnomle = 0; emgfitnomle < 27; emgfitnomle++) {
+	double mu[3];
+	for (int i = 0; i < 3; i++) 
+		mu[i] = mean * vry[i];
 
-	  int i = emgfitnomle;
+	double sigma[3];
+	for (int i = 0; i < 3; i++) 
+		sigma[i] = pow(variance*vry[i], 0.5);
 
-      /* 'IMT_analysis_April2017:200' fprintf('i=%f\n',i); */
-      //d_cfprintf(1.0 + (double)emgfitnomle);
-	  printf("i = %d\n", 1 + i);
+	/* prepare parameter seeds */
+	int seedIdx = 0;
+	double paramSeeds[27][3];
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			for (int k = 0; k < 3; k++) {
+				paramSeeds[seedIdx][0] = lambda[i];
+				paramSeeds[seedIdx][1] = sigma[j];
+				paramSeeds[seedIdx][2] = mu[k];
+				seedIdx++;
+			}
+		}
+	}
 
-      /* 'IMT_analysis_April2017:201' fprintf('  P=[%f %f %f]\n',P(i,1),P(i,2),P(i,3)); */
-      //e_cfprintf(P[emgfitnomle], P[27 + emgfitnomle], P[54 + emgfitnomle]);
-	  printf("[%f %f %f]\n", P[emgfitnomle], P[27 + emgfitnomle], P[54 + emgfitnomle]);
-	  printf("[%f %f %f]\n", emgSeeds[i][0], emgSeeds[i][1], emgSeeds[i][2]);
+	/* optimize parameters */
+	double optimizedParams[27][3];
+	double le[27];
+    for (seedIdx = 0; seedIdx < 27; seedIdx++) {
 
-      /* 'IMT_analysis_April2017:202' x0=P(i,:); */
-      /* 'IMT_analysis_April2017:203' options = statset('MaxIter',10000, 'MaxFunEvals',10000); */
+	  printf("i = %d\n", 1 + seedIdx);
+	  printf("  P=[%.17f %.17f %.17f]\n", paramSeeds[seedIdx][0], paramSeeds[seedIdx][1], paramSeeds[seedIdx][2]);
 
-	  /* 'IMT_analysis_April2017:205' f=@(x)(sum(-log(emgpdf(data,x(1),x(2),x(3))))); */
-      /* 'IMT_analysis_April2017:206' [ep(i,:),pval]=fminsearch(f, x0, options); */
-      for (itmp = 0; itmp < 3; itmp++) {
-        p[itmp] = P[emgfitnomle + 27 * itmp];
-      }
+	  /* select our working seed */
+	  double paramSeed[3];
+      for (int i = 0; i < 3; i++) 
+		  paramSeed[i] = paramSeeds[seedIdx][i];
 
-      //fminsearch(p);
+#ifdef _GSL_MINIMIZE
+	  // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
 
+	  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+	  gsl_multimin_fminimizer *s = NULL;
+	  gsl_vector *ss, *x;
+	  gsl_multimin_function minex_func;
+
+	  size_t iter = 0;
+	  int status;
+	  double size;
+
+	  /* Starting point */
+	  x = gsl_vector_alloc(3);
+	  gsl_vector_set(x, 0, paramSeed[0]);
+	  gsl_vector_set(x, 1, paramSeed[1]);
+	  gsl_vector_set(x, 2, paramSeed[2]);
+
+	  /* Set initial step sizes to 1 */
+	  ss = gsl_vector_alloc(3);
+	  gsl_vector_set_all(ss, 1.0);
+
+	  /* Initialize method and iterate */
+	  minex_func.n = 3;
+	  minex_func.f = emgpdf_loglikelihood;
+	  minex_func.params = (void *)data;
+
+	  s = gsl_multimin_fminimizer_alloc(T, 3);
+	  gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+
+	  do
+	  {
+		  iter++;
+		  status = gsl_multimin_fminimizer_iterate(s);
+
+		  if (status)
+			  break;
+
+		  size = gsl_multimin_fminimizer_size(s);
+		  status = gsl_multimin_test_size(size, 1e-4);
+
+#ifdef _VERBOSE
+		  if (status == GSL_SUCCESS)
+		  {
+			  printf("converged to minimum at\n");
+		  }
+
+		  printf("%5d %.17f %.17f %.17f f() = %.17f size = %.3f\n",
+			  iter,
+			  gsl_vector_get(s->x, 0),
+			  gsl_vector_get(s->x, 1),
+			  gsl_vector_get(s->x, 2),
+			  s->fval, size);
+#endif
+	  } while (status == GSL_CONTINUE && iter < 10000);
+
+	  optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
+	  optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
+	  optimizedParams[seedIdx][2] = fabs(gsl_vector_get(s->x, 2));
+
+	  gsl_vector_free(x);
+	  gsl_vector_free(ss);
+	  gsl_multimin_fminimizer_free(s);
+
+#else
 	  void(*emgpdf_ptr)(const double X[266], double l, double m, double s, double Y[266]) = &emgpdf;
+	  fminsearch_generalized(paramSeed, emgpdf_ptr, data);
+	  for (int i = 0; i < 3; i++) 
+		  optimizedParams[seedIdx][i] = paramSeed[i];
+#endif
 
-	  fminsearch_generalized(p, emgpdf_ptr, data);
+	  printf("  ep=[%.17f %.17f %.17f]\n", optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2]);
 
+	  /* recalculate our best fit */
+      emgpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], l);
 
-      for (itmp = 0; itmp < 3; itmp++) {
-        ep[emgfitnomle + 27 * itmp] = p[itmp];
-      }
+	  /* calculate the log likelihood for our best fit */
+	  double loglikelihood = 0;
+	  for (int i = 0; i < 266; i++) {
+		  loglikelihood += log(l[i]);
+	  }
 
-      /* 'IMT_analysis_April2017:207' fprintf('  ep=[%f %f %f]\n',ep(i,1),ep(i,2),ep(i,3)); */
-      f_cfprintf(ep[emgfitnomle], ep[27 + emgfitnomle], ep[54 + emgfitnomle]);
-
-      /* econfint(:,:,i)=econf(:); */
-      /* econfint(:,:,i)=[0.1, 0.1, 0.1, 0.1 ; 0.1, 0.1, 0.1, 0.1]; */
-      /* 'IMT_analysis_April2017:210' l=emgpdf(data,ep(i,1),ep(i,2),ep(i,3)); */
-      /* 'IMT_analysis_April2017:211' le(i)=sum(log(l)); */
-      emgpdf(dv27, ep[emgfitnomle], ep[27 + emgfitnomle], ep[54 + emgfitnomle],
-             l);
-      b_log(l);
-      mtmp = sum(l);
-
-      /* 'IMT_analysis_April2017:212' fprintf('  l=%f\n\n',le(i)); */
-      g_cfprintf(mtmp);
-      le[emgfitnomle] = mtmp;
+	  printf("  l=%.17f\n\n", loglikelihood);
+      le[seedIdx] = loglikelihood;
     }
 
-    /*  common to each fit, consider factoring out */
-    /* 'IMT_analysis_April2017:216' [max_le,ind_le]=max(le); */
-    emgfitnomle = 1;
-    mtmp = le[0];
-    itmp = 0;
-    if (rtIsNaN(le[0])) {
-      ix = 1;
-      exitg1 = false;
-      while ((!exitg1) && (ix + 1 < 28)) {
-        emgfitnomle = ix + 1;
-        if (!rtIsNaN(le[ix])) {
-          mtmp = le[ix];
-          itmp = ix;
-          exitg1 = true;
-        } else {
-          ix++;
-        }
-      }
-    }
+	/* find the best optimized parameter set for all starting seeds tried */
+	double maxLikelihood = 0;
+	int ind_le = 0;
+	for (int i = 0; i < 27; i++) {
+		if (le[i] < maxLikelihood){
+			maxLikelihood = le[i];
+			ind_le = i;
+		}
+	}
 
-    if (emgfitnomle < 27) {
-      while (emgfitnomle + 1 < 28) {
-        if (le[emgfitnomle] > mtmp) {
-          mtmp = le[emgfitnomle];
-          itmp = emgfitnomle;
-        }
-
-        emgfitnomle++;
-      }
-    }
-
-    /* 'IMT_analysis_April2017:217' ep_max=ep(ind_le,:); */
-    /* confint_max=econfint(:,:,ind_le); */
-    /* 'IMT_analysis_April2017:219' fprintf('max_le=%f ind_le=%f\n',max_le,ind_le); */
-    h_cfprintf(mtmp, itmp + 1);
-
-    /* 'IMT_analysis_April2017:220' fprintf('ep_max=[%f %f %f]\n\n',ep_max(1),ep_max(2),ep_max(3)); */
-    i_cfprintf(ep[itmp], ep[27 + itmp], ep[54 + itmp]);
-
-    /*  END FUNCTION FIT_EMG */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	printf("max_le=%.17f ind_le=%d\n", maxLikelihood, ind_le+1);
+	printf("ep_max=[%.17f %.17f %.17f]\n\n", optimizedParams[ind_le][0], optimizedParams[ind_le][1], optimizedParams[ind_le][2]);
   }
 
  
-  /*  % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-  /* Fit the one-stage model using fminsearch */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* Fit the one-stage model */
   /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
   /* 'IMT_analysis_April2017:283' if onestagefitnomle == 1 */
   if (onestagefitnomle == 1) {
-    /*  BEGIN FUNCTION FIT_ONESTAGE_NOMLE */
-    /* 'IMT_analysis_April2017:285' fprintf('onestagefitnomle\n\n'); */
-    j_cfprintf();
 
-    /*  prepare statistical variables */
-    /* 'IMT_analysis_April2017:288' mu=1/C1; */
-    /* 'IMT_analysis_April2017:289' sigma=(C2/C1^3)^.5; */
-    /* 'IMT_analysis_April2017:290' vry=.5:.5:2; */
-    /* 'IMT_analysis_April2017:291' m=mu*vry; */
-    /* 'IMT_analysis_April2017:292' s=sigma*vry; */
-    /* 'IMT_analysis_April2017:293' N=length(vry); */
-    /*  maybe these should be moved down into optimize parameters */
-    /*  section? */
-    /* 'IMT_analysis_April2017:297' pd=zeros(N^2,2); */
-    /* 'IMT_analysis_April2017:298' ld=-realmax*ones(N^2,1); */
-    /* 'IMT_analysis_April2017:299' options = statset('MaxIter',10000, 'MaxFunEvals',10000); */
-    /*  prepare parameter seeds */
-    /* 'IMT_analysis_April2017:302' pp = cell(N^2); */
-    /* 'IMT_analysis_April2017:303' for i = 1:N */
-    /* 'IMT_analysis_April2017:304' for j = 1:N */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:304' for j = 1:N */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:304' for j = 1:N */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:304' for j = 1:N */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:305' pp{(i-1)*N+j} = [m(i), s(j)]; */
-    /* 'IMT_analysis_April2017:308' P = zeros(N^2,2); */
-    /* 'IMT_analysis_April2017:309' for ii = 1:N^2 */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:310' P(ii,:) = pp{ii}; */
-    for (itmp = 0; itmp < 2; itmp++) {
-      b_P[itmp << 4] = 0.04246759052302191 + -0.012976272220350877 * (double)
-        itmp;
-      b_P[1 + (itmp << 4)] = 0.04246759052302191 + 0.016515046082320156 *
-        (double)itmp;
-      b_P[2 + (itmp << 4)] = 0.04246759052302191 + 0.046006364384991193 *
-        (double)itmp;
-      b_P[3 + (itmp << 4)] = dv28[itmp];
-      b_P[4 + (itmp << 4)] = dv29[itmp];
-      b_P[5 + (itmp << 4)] = 0.08493518104604382 + -0.025952544440701754 *
-        (double)itmp;
-      b_P[6 + (itmp << 4)] = 0.08493518104604382 + 0.0035387738619692827 *
-        (double)itmp;
-      b_P[7 + (itmp << 4)] = 0.08493518104604382 + 0.033030092164640312 *
-        (double)itmp;
-      b_P[8 + (itmp << 4)] = dv30[itmp];
-      b_P[9 + (itmp << 4)] = dv31[itmp];
-      b_P[10 + (itmp << 4)] = 0.12740277156906574 + -0.038928816661052634 *
-        (double)itmp;
-      b_P[11 + (itmp << 4)] = 0.12740277156906574 + -0.0094374983583816047 *
-        (double)itmp;
-      b_P[12 + (itmp << 4)] = dv32[itmp];
-      b_P[13 + (itmp << 4)] = dv33[itmp];
-      b_P[14 + (itmp << 4)] = 0.16987036209208764 + -0.081396407184074537 *
-        (double)itmp;
-      b_P[15 + (itmp << 4)] = 0.16987036209208764 + -0.051905088881403508 *
-        (double)itmp;
-    }
+	  printf("onestagefitnomle\n\n");
 
-    /*  optimize parameters */
-    /* 'IMT_analysis_April2017:314' for i=1:N^2 */
-    for (emgfitnomle = 0; emgfitnomle < 16; emgfitnomle++) {
-      /* 'IMT_analysis_April2017:315' fprintf('i=%f\n',i); */
-      d_cfprintf(1.0 + (double)emgfitnomle);
+	  /* prepare statistical variables */
+	  double mean = gsl_stats_mean(data, 1, 266);
+	  double variance = gsl_stats_variance(data, 1, 266);
+	  double vry[4] = { 0.5, 1.0, 1.5, 2.0 };
 
-      /* 'IMT_analysis_April2017:316' fprintf('  P=[%f %f]\n',P(i,1),P(i,2)); */
-      k_cfprintf(b_P[emgfitnomle], b_P[16 + emgfitnomle]);
+	  double mu = 1.0 / mean;
+	  double sigma = pow((variance / pow(mean, 3)), 0.5);
 
-      /* 'IMT_analysis_April2017:317' x0 = P(i,:); */
-      /* 'IMT_analysis_April2017:318' f=@(x)(sum(-log(onestagepdf2(data,x(1),x(2))))); */
-      /* 'IMT_analysis_April2017:319' [p,pval]=fminsearch(f, x0, options); */
-      for (itmp = 0; itmp < 2; itmp++) {
-        b_p[itmp] = b_P[emgfitnomle + (itmp << 4)];
-      }
+	  double m[4];
+	  for (int i = 0; i < 4; i++) 
+		  m[i] = mu*vry[i];
+	  
+	  double s[4];
+	  for (int i = 0; i < 4; i++)
+		  s[i] = sigma*vry[i];
 
+	  /* prepare parameter seeds */
+	  int seedIdx = 0;
+	  double paramSeeds[16][2];
+	  for (int i = 0; i < 4; i++) {
+		  for (int j = 0; j < 4; j++) {
+				  paramSeeds[seedIdx][0] = m[i];
+				  paramSeeds[seedIdx][1] = s[j];
+				  seedIdx++;
+		  }
+	  }
+
+	/* optimize parameters */
+	  double optimizedParams[27][3];
+	  double le[27];
+    for (seedIdx = 0; seedIdx < 16; seedIdx++) {
+		printf("i=%d\n", 1.0 + seedIdx);
+		printf("  P=[%f %f]\n", paramSeeds[seedIdx][0], paramSeeds[seedIdx][1]);
+
+		
+
+#ifdef _GSL_MINIMIZE
+	  // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
+
+	  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+	  gsl_multimin_fminimizer *s = NULL;
+	  gsl_vector *ss, *x;
+	  gsl_multimin_function minex_func;
+
+	  size_t iter = 0;
+	  int status;
+	  double size;
+
+	  /* Starting point */
+	  x = gsl_vector_alloc(2);
+	  gsl_vector_set(x, 0, paramSeeds[seedIdx][0]);
+	  gsl_vector_set(x, 1, paramSeeds[seedIdx][1]);
+
+	  /* Set initial step sizes to 1 */
+	  ss = gsl_vector_alloc(2);
+	  gsl_vector_set_all(ss, 1.0);
+
+	  /* Initialize method and iterate */
+	  minex_func.n = 2;
+	  minex_func.f = wald_loglikelihood;
+	  minex_func.params = (void *)data;
+
+	  s = gsl_multimin_fminimizer_alloc(T, 2);
+	  gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+
+	  do
+	  {
+		  iter++;
+		  status = gsl_multimin_fminimizer_iterate(s);
+
+		  if (status)
+			  break;
+
+		  size = gsl_multimin_fminimizer_size(s);
+		  status = gsl_multimin_test_size(size, 1e-4);
+
+#ifdef _VERBOSE
+		  if (status == GSL_SUCCESS)
+		  {
+			  printf("converged to minimum at\n");
+		  }
+
+		  printf("%5d %.17f %.17f f() = %.17f size = %.3f\n",
+			  iter,
+			  gsl_vector_get(s->x, 0),
+			  gsl_vector_get(s->x, 1),
+			  s->fval, size);
+#endif
+	  } while (status == GSL_CONTINUE && iter < 10000);
+
+	  optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
+	  optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
+
+	  gsl_vector_free(x);
+	  gsl_vector_free(ss);
+	  gsl_multimin_fminimizer_free(s);
+#else
+		for (int i = 0; i < 2; i++) {
+			b_p[i] = paramSeeds[seedIdx][i];
+		}
       b_fminsearch(b_p);
+	  optimizedParams[seedIdx][0] = b_p[0];
+	  optimizedParams[seedIdx][1] = b_p[1];
+#endif
 
-      /* 'IMT_analysis_April2017:320' fprintf('  p=[%f %f]\n',p(1),p(2)); */
-      l_cfprintf(b_p[0], b_p[1]);
 
-      /* 'IMT_analysis_April2017:321' pd(i,:)=p; */
-      for (itmp = 0; itmp < 2; itmp++) {
-        pd[emgfitnomle + (itmp << 4)] = b_p[itmp];
-      }
+	  printf("  p=[%f %f]\n", optimizedParams[seedIdx][0], optimizedParams[seedIdx][1]);
 
-      /* confint(:,:,i)=conf1(:); */
-      /* confint(:,:,i)=[0.1, 0.1, 0.1, 0.1 ; 0.1, 0.1, 0.1, 0.1]; */
-      /* 'IMT_analysis_April2017:324' l=onestagepdf2(data,p(1),p(2)); */
-      /* 'IMT_analysis_April2017:325' ld(i)=sum(log(l)); */
-      onestagepdf2(dv27, b_p[0], b_p[1], l);
-      b_log(l);
-      mtmp = sum(l);
+      //onestagepdf2(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l);
+	  waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l, 266);
 
-      /* 'IMT_analysis_April2017:326' fprintf('  l=%f\n\n',ld(i)); */
-      g_cfprintf(mtmp);
-      ld[emgfitnomle] = mtmp;
+
+	  /* calculate the log likelihood for our best fit */
+	  double loglikelihood = 0;
+	  for (int i = 0; i < 266; i++) {
+		  loglikelihood += log(l[i]);
+	  }
+
+	  printf("  l=%.17f\n\n", loglikelihood);
+	  ld[seedIdx] = loglikelihood;
     }
 
-    /*  common to each fit, consider factoring out */
-    /* 'IMT_analysis_April2017:330' [max_ld,ind_ld]=max(ld); */
-    emgfitnomle = 1;
-    mtmp = ld[0];
-    itmp = 0;
-    if (rtIsNaN(ld[0])) {
-      ix = 2;
-      exitg1 = false;
-      while ((!exitg1) && (ix < 17)) {
-        emgfitnomle = ix;
-        if (!rtIsNaN(ld[ix - 1])) {
-          mtmp = ld[ix - 1];
-          itmp = ix - 1;
-          exitg1 = true;
-        } else {
-          ix++;
-        }
-      }
-    }
+	/* find the best optimized parameter set for all starting seeds tried */
+	double maxLikelihood = 0;
+	int ind_ld = 0;
+	for (int i = 0; i < 27; i++) {
+		if (ld[i] < maxLikelihood) {
+			maxLikelihood = ld[i];
+			ind_ld = i;
+		}
+	}
 
-    if (emgfitnomle < 16) {
-      while (emgfitnomle + 1 < 17) {
-        if (ld[emgfitnomle] > mtmp) {
-          mtmp = ld[emgfitnomle];
-          itmp = emgfitnomle;
-        }
-
-        emgfitnomle++;
-      }
-    }
-
-    /* 'IMT_analysis_April2017:331' pd_max=pd(ind_ld,:); */
-    /* confint_max=confint(:,:,ind_ld); */
-    /* 'IMT_analysis_April2017:333' fprintf('max_ld=%f row_ld=%f\n',max_ld,ind_ld); */
-    m_cfprintf(mtmp, itmp + 1);
-
-    /* 'IMT_analysis_April2017:334' fprintf('pd_max=[%f %f]\n\n',pd_max(1),pd_max(2)); */
-    n_cfprintf(pd[itmp], pd[16 + itmp]);
-
-    /*  END FUNCTION FIT_ONESTAGE_NOMLE */
+	printf("max_ld=%f row_ld=%f\n", maxLikelihood, ind_ld);
+	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0], optimizedParams[ind_ld][1]);
   }
 
   
-  /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /* Fit one-stage model with lag with fminsearch */
-  /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-  /* 'IMT_analysis_April2017:399' if onestagelagnomle == 1 */
   if (onestagelagnomle == 1) {
-    /*  BEGIN FUNCTION FIT_ONESTAGELAG */
-    /* 'IMT_analysis_April2017:401' fprintf('onestagefitlagnomle\n\n'); */
-    o_cfprintf();
 
-    /*  prepare statistical parameters */
-    /* 'IMT_analysis_April2017:403' mu = C3/(3*C2^2); */
-    /* 'IMT_analysis_April2017:404' sigma = (C3^3/(27*C2^5))^.5; */
-    /* 'IMT_analysis_April2017:405' lag = C1-3*C2^2/C3; */
-    /* 'IMT_analysis_April2017:406' vryv=[0.5 1 2]; */
-    /* 'IMT_analysis_April2017:407' vrym=[.25 .5 .75]; */
-    /* 'IMT_analysis_April2017:408' m = mu*vrym; */
-    /* 'IMT_analysis_April2017:409' s = sigma*vryv; */
-    /* 'IMT_analysis_April2017:410' lag = lag*vrym; */
-    /* 'IMT_analysis_April2017:411' N = length(vrym); */
-    /*  prepare parameter seeds */
-    /* 'IMT_analysis_April2017:414' pp = cell(N^3); */
-    /* 'IMT_analysis_April2017:415' for i = 1:N */
-    /* 'IMT_analysis_April2017:416' for j = 1:N */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:416' for j = 1:N */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:416' for j = 1:N */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:417' for k = 1:N */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:418' pp{N^2*(i-1)+N*(j-1)+k} = [m(i), s(j), lag(k)]; */
-    /* 'IMT_analysis_April2017:422' P = zeros(N^3,3); */
-    /* 'IMT_analysis_April2017:423' for ii = 1:N^3 */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    /* 'IMT_analysis_April2017:424' P(ii,:) = pp{ii}; */
-    for (itmp = 0; itmp < 3; itmp++) {
-      P[27 * itmp] = dv34[itmp];
-      P[1 + 27 * itmp] = dv35[itmp];
-      P[2 + 27 * itmp] = dv36[itmp];
-      P[3 + 27 * itmp] = dv37[itmp];
-      P[4 + 27 * itmp] = dv38[itmp];
-      P[5 + 27 * itmp] = dv39[itmp];
-      P[6 + 27 * itmp] = dv40[itmp];
-      P[7 + 27 * itmp] = dv41[itmp];
-      P[8 + 27 * itmp] = dv42[itmp];
-      P[9 + 27 * itmp] = dv43[itmp];
-      P[10 + 27 * itmp] = dv44[itmp];
-      P[11 + 27 * itmp] = dv45[itmp];
-      P[12 + 27 * itmp] = dv46[itmp];
-      P[13 + 27 * itmp] = dv47[itmp];
-      P[14 + 27 * itmp] = dv48[itmp];
-      P[15 + 27 * itmp] = dv49[itmp];
-      P[16 + 27 * itmp] = dv50[itmp];
-      P[17 + 27 * itmp] = dv51[itmp];
-      P[18 + 27 * itmp] = dv52[itmp];
-      P[19 + 27 * itmp] = dv53[itmp];
-      P[20 + 27 * itmp] = dv54[itmp];
-      P[21 + 27 * itmp] = dv55[itmp];
-      P[22 + 27 * itmp] = dv56[itmp];
-      P[23 + 27 * itmp] = dv57[itmp];
-      P[24 + 27 * itmp] = dv58[itmp];
-      P[25 + 27 * itmp] = dv59[itmp];
-      P[26 + 27 * itmp] = dv60[itmp];
-    }
+	  printf("onestagefitlagnomle\n\n");
 
-    /*  optimize parameters */
-    /* 'IMT_analysis_April2017:428' pd = zeros(N^3,3); */
-    /* 'IMT_analysis_April2017:429' ld = -realmax*ones(N^3,1); */
-    /* 'IMT_analysis_April2017:430' options = statset('MaxIter',10000, 'MaxFunEvals',10000); */
-    /* 'IMT_analysis_April2017:431' for i=1:length(P) */
-    for (emgfitnomle = 0; emgfitnomle < 27; emgfitnomle++) {
-      /* 'IMT_analysis_April2017:432' fprintf('i=%f\n',i); */
-      d_cfprintf(1.0 + (double)emgfitnomle);
+	  /* prepare statistical variables */
+	  double mean = gsl_stats_mean(data, 1, 266);
+	  double variance = gsl_stats_variance(data, 1, 266);
 
-      /* 'IMT_analysis_April2017:433' fprintf('  P=[%f %f %f]\n',P(i,1),P(i,2),P(i,3)); */
-      e_cfprintf(P[emgfitnomle], P[27 + emgfitnomle], P[54 + emgfitnomle]);
+	  // C3 = sum((data-C1).^3)/(length(data));
+	  double c3sum = 0;
+	  for (int i = 0; i < 266; i++) {
+		  c3sum += pow(data[i] - mean, 3.0);
+	  }
+	  c3sum = c3sum / 266;
+
+	  double mu = c3sum / (3 * pow(variance, 2.0));
+	  double sigma = pow((pow(c3sum, 3.0) / (27*pow(variance, 5.0))), 0.5);
+	  double lag = mean - 3 * pow(variance, 2.0) / c3sum;
+
+	  double vryv[3] = { 0.5, 1, 2 };
+	  double vrym[3] = { 0.25, 0.5, 0.75 };
+
+	  double m[3];
+	  for (int i = 0; i < 3; i++)
+		  m[i] = mu*vrym[i];
+
+	  double s[3];
+	  for (int i = 0; i < 3; i++)
+		  s[i] = sigma*vryv[i];
+
+	  double L[3];
+	  for (int i = 0; i < 3; i++)
+		  L[i] = lag*vrym[i];
+
+
+	  /* prepare parameter seeds */
+	  int seedIdx = 0;
+	  double paramSeeds[64][3];
+	  for (int i = 0; i < 3; i++) {
+		  for (int j = 0; j < 3; j++) {
+			  for (int k = 0; k < 3; k++) {
+				  paramSeeds[seedIdx][0] = m[i];
+				  paramSeeds[seedIdx][1] = s[j];
+				  paramSeeds[seedIdx][2] = L[k];
+				  seedIdx++;
+			  }
+		  }
+	  }
+
+	/* optimize parameters */
+	double optimizedParams[27][3];
+	double le[27];
+
+    for (seedIdx = 0; seedIdx < 27; seedIdx++) {
+
+		printf("i=%d\n", 1 + seedIdx);
+		printf("  P=[%f %f %f]\n", paramSeeds[seedIdx][0], paramSeeds[seedIdx][1], paramSeeds[seedIdx][2]);
+
 
       /* 'IMT_analysis_April2017:434' x0=P(i,:); */
       /* [p,conf1]=mle(data,'pdf',@onestagepdf_lag,'start',x0, 'upperbound', [Inf Inf Inf],'lowerbound',[0 0 0],'options',options); */
       /* 'IMT_analysis_April2017:436' f=@(x)(sum(-log(onestagepdf_lag(data,x(1),x(2),x(3))))); */
       /* 'IMT_analysis_April2017:437' [p,pval]=fminsearch(f, x0, options); */
-      for (itmp = 0; itmp < 3; itmp++) {
-        p[itmp] = P[emgfitnomle + 27 * itmp];
-      }
 
+#ifdef _GSL_MINIMIZE
+	  // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
+
+	  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+	  gsl_multimin_fminimizer *s = NULL;
+	  gsl_vector *ss, *x;
+	  gsl_multimin_function minex_func;
+
+	  size_t iter = 0;
+	  int status;
+	  double size;
+
+	  /* Starting point */
+	  x = gsl_vector_alloc(3);
+	  gsl_vector_set(x, 0, paramSeeds[seedIdx][0]);
+	  gsl_vector_set(x, 1, paramSeeds[seedIdx][1]);
+	  gsl_vector_set(x, 2, paramSeeds[seedIdx][2]);
+
+	  /* Set initial step sizes to 1 */
+	  ss = gsl_vector_alloc(3);
+	  gsl_vector_set_all(ss, 1.0);
+
+	  /* Initialize method and iterate */
+	  minex_func.n = 3;
+	  minex_func.f = waldlag_loglikelihood;
+	  minex_func.params = (void *)data;
+
+	  s = gsl_multimin_fminimizer_alloc(T, 3);
+	  gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+
+	  do
+	  {
+		  iter++;
+		  status = gsl_multimin_fminimizer_iterate(s);
+
+		  if (status)
+			  break;
+
+		  size = gsl_multimin_fminimizer_size(s);
+		  status = gsl_multimin_test_size(size, 1e-4);
+
+#ifdef _VERBOSE
+		  if (status == GSL_SUCCESS)
+		  {
+			  printf("converged to minimum at\n");
+		  }
+
+		  printf("%5d %.17f %.17f %.17f f() = %.17f size = %.3f\n",
+			  iter,
+			  gsl_vector_get(s->x, 0),
+			  gsl_vector_get(s->x, 1),
+			  gsl_vector_get(s->x, 2),
+			  s->fval, size);
+#endif
+	  } while (status == GSL_CONTINUE && iter < 10000);
+
+	  optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
+	  optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
+	  optimizedParams[seedIdx][2] = fabs(gsl_vector_get(s->x, 2));
+
+	  gsl_vector_free(x);
+	  gsl_vector_free(ss);
+	  gsl_multimin_fminimizer_free(s);
+
+#else
+      for (int i = 0; i < 3; i++) {
+			p[i] = paramSeeds[seedIdx][i];
+	  }
       c_fminsearch(p);
+	  for (int i = 0; i < 3; i++) {
+		  optimizedParams[seedIdx][i] = p[i];
+	  }
 
-      /* 'IMT_analysis_April2017:438' fprintf('  p=[%f %f %f]\n',p(1),p(2),p(3)); */
-      p_cfprintf(p[0], p[1], p[2]);
+#endif
 
-      /* 'IMT_analysis_April2017:439' pd(i,:)=p; */
-      for (itmp = 0; itmp < 3; itmp++) {
-        ep[emgfitnomle + 27 * itmp] = p[itmp];
-      }
+	  printf("  p=[%f %f %f]\n", optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2]);
 
-      /* confint(:,:,i)=conf1(:); */
-      /* 'IMT_analysis_April2017:441' l=onestagepdf_lag(data,p(1),p(2),p(3)); */
-      /* 'IMT_analysis_April2017:442' ld(i)=sum(log(l)); */
-      onestagepdf_lag(dv27, p[0], p[1], p[2], l);
-      b_log(l);
-      mtmp = sum(l);
+      //onestagepdf_lag(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], l);
+	  waldlagpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], l);
 
-      /* 'IMT_analysis_April2017:443' fprintf('  l=%f\n\n',ld(i)); */
-      g_cfprintf(mtmp);
-      le[emgfitnomle] = mtmp;
+
+	  /* calculate the log likelihood for our best fit */
+	  double loglikelihood = 0;
+	  for (int i = 0; i < 266; i++) {
+		  loglikelihood += log(l[i]);
+	  }
+
+	  printf("  l=%.17f\n\n", loglikelihood);
+	  le[seedIdx] = loglikelihood;
     }
 
-    /*  common to each fit, consider factoring out */
-    /* 'IMT_analysis_April2017:447' [max_ld,ind_ld]=max(ld); */
-    emgfitnomle = 1;
-    mtmp = le[0];
-    itmp = 0;
-    if (rtIsNaN(le[0])) {
-      ix = 1;
-      exitg1 = false;
-      while ((!exitg1) && (ix + 1 < 28)) {
-        emgfitnomle = ix + 1;
-        if (!rtIsNaN(le[ix])) {
-          mtmp = le[ix];
-          itmp = ix;
-          exitg1 = true;
-        } else {
-          ix++;
-        }
-      }
-    }
+	/* find the best optimized parameter set for all starting seeds tried */
+	double maxLikelihood = 0;
+	int ind_ld = 0;
+	for (int i = 0; i < 27; i++) {
+		if (le[i] < maxLikelihood) {
+			maxLikelihood = le[i];
+			ind_ld = i;
+		}
+	}
 
-    if (emgfitnomle < 27) {
-      while (emgfitnomle + 1 < 28) {
-        if (le[emgfitnomle] > mtmp) {
-          mtmp = le[emgfitnomle];
-          itmp = emgfitnomle;
-        }
-
-        emgfitnomle++;
-      }
-    }
-
-    /* 'IMT_analysis_April2017:448' pd_max=pd(ind_ld,:); */
-    /* confint_max=confint(:,:,ind_ld); */
-    /* 'IMT_analysis_April2017:450' fprintf('max_ld=%f row_ld=%f\n',max_ld,ind_ld); */
-    m_cfprintf(mtmp, itmp + 1);
-
-    /* 'IMT_analysis_April2017:451' fprintf('pd_max=[%f %f %f]\n\n',pd_max(1),pd_max(2),pd_max(3)); */
-    q_cfprintf(ep[itmp], ep[27 + itmp], ep[54 + itmp]);
-
-    /*  END FUNCTION FIT_ONESTAGELAG */
+	printf("max_ld=%f row_ld=%d\n", maxLikelihood, ind_ld + 1);
+	printf("pd_max=[%f %f %f]\n\n", optimizedParams[ind_ld][0], optimizedParams[ind_ld][1], optimizedParams[ind_ld][2]);
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   
   /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -941,21 +861,32 @@ void IMT_analysis_April2017(const char *model)
   if (twostagefitnomle == 1) {
     /*  BEGIN FUNCTION FIT_TWOSTAGE */
     /* 'IMT_analysis_April2017:549' fprintf('twostagefitnomle\n'); */
-    r_cfprintf();
+    //r_cfprintf();
+	  printf("twostagefitnomle\n");
 
-    /*  prepare statistical parameters */
-    /* 'IMT_analysis_April2017:551' vry = [.25 .5 .75]'; */
-    /*  vrys=[.01 1 10]'; */
-    /*  [x0, l_moments, min_res] = moments_method_2stage(data); */
-    /*  m1 = x0(1)*vry;  */
-    /*  s1 = x0(2)*vrys; */
-    /*  m2 = x0(3)*vry; */
-    /*  s2 = x0(4)*vrys; */
-    /* 'IMT_analysis_April2017:558' c1 = C1*vry; */
-    /* 'IMT_analysis_April2017:559' c2 = C2*vry; */
-    /* 'IMT_analysis_April2017:560' m = 1./c1; */
-    /* 'IMT_analysis_April2017:561' s = (c2./c1.^3).^0.5; */
-    /* 'IMT_analysis_April2017:562' N = length(vry); */
+	  /* prepare statistical variables */
+	  double mean = gsl_stats_mean(data, 1, 266);
+	  double variance = gsl_stats_variance(data, 1, 266);
+
+	  double vry[3] = { 0.25, 0.5, 0.75 };
+	  double vrys[3] = { 0.01, 1, 10 };
+
+	  double m[3];
+	  double s[3];
+	  for (int i = 0; i < 3; i++) {
+		  m[i] = 1 / (mean*vry[i]);
+		  s[i] = pow((variance*vry[i])/(pow(mean*vry[i],3.0)), 0.5);
+	  }
+
+	  double pcomb[9][2];
+	  int pcomb_idx = 0;
+	  for (int i = 0; i < 3; i++) {
+		  for (int j = 0; j < 3; j++) {
+			  pcomb[pcomb_idx][0] = m[i];
+			  pcomb[pcomb_idx][1] = s[j];
+		  }
+	  }
+
     /*  prepare parameter seeds */
     /* get all pairs of the form [m(i),s(j)] */
     /* these pairs represent all possible unique  */
@@ -1025,11 +956,13 @@ void IMT_analysis_April2017(const char *model)
     /* 'IMT_analysis_April2017:611' for i=1:length(id) */
     for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
       /* 'IMT_analysis_April2017:612' fprintf('i=%f\n',i); */
-      d_cfprintf(1.0 + (double)emgfitnomle);
+      //d_cfprintf(1.0 + (double)emgfitnomle);
+		printf("i=%f\n", 1.0 + (double)emgfitnomle);
 
       /* 'IMT_analysis_April2017:613' fprintf('  P=[%f %f %f %f]\n',P(i,1),P(i,2),P(i,3),P(i,4)); */
-      s_cfprintf(c_P[emgfitnomle], c_P[45 + emgfitnomle], c_P[90 + emgfitnomle],
-                 c_P[135 + emgfitnomle]);
+      //s_cfprintf(c_P[emgfitnomle], c_P[45 + emgfitnomle], c_P[90 + emgfitnomle],
+      //           c_P[135 + emgfitnomle]);
+	  printf("  P=[%f %f %f %f]\n", c_P[emgfitnomle], c_P[45 + emgfitnomle], c_P[90 + emgfitnomle], c_P[135 + emgfitnomle]);
 
       /* 'IMT_analysis_April2017:614' x0 = P(i,:); */
       /* f=@(x,m1,s1,m2,s2)convolv_2invG_adapt_nov(x,m1,s1,m2,s2,.01); */
@@ -1042,35 +975,124 @@ void IMT_analysis_April2017(const char *model)
       for (itmp = 0; itmp < 4; itmp++) {
         c_p[itmp] = c_P[emgfitnomle + 45 * itmp];
       }
+#ifdef _GSL_MINIMIZE
+	  // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
 
+	  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+	  gsl_multimin_fminimizer *s = NULL;
+	  gsl_vector *ss, *x;
+	  gsl_multimin_function minex_func;
+
+	  size_t iter = 0;
+	  int status;
+	  double size;
+
+	  /* Starting point */
+	  x = gsl_vector_alloc(4);
+	  gsl_vector_set(x, 0, c_p[0]);
+	  gsl_vector_set(x, 1, c_p[1]);
+	  gsl_vector_set(x, 2, c_p[2]);
+	  gsl_vector_set(x, 3, c_p[3]);
+
+
+	  // Store previous state
+	  gsl_vector *prev;
+	  prev = gsl_vector_alloc(4);
+	  gsl_vector_set_all(prev, 0);
+	  int repeated = 0;
+
+
+	  /* Set initial step sizes to 1 */
+	  ss = gsl_vector_alloc(4);
+	  gsl_vector_set_all(ss, 1.0);
+
+	  /* Initialize method and iterate */
+	  minex_func.n = 4;
+	  minex_func.f = convolv_2invG_adapt_nov_loglikelihood;
+	  minex_func.params = (void *)data;
+
+	  s = gsl_multimin_fminimizer_alloc(T, 4);
+	  gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+
+	  do
+	  {
+		  iter++;
+		  status = gsl_multimin_fminimizer_iterate(s);
+
+		  if (status)
+			  break;
+
+		  size = gsl_multimin_fminimizer_size(s);
+		  status = gsl_multimin_test_size(size, 1e-4);
+		  
+		  /*
+		  // Detect repeated states
+		  gsl_vector_sub(prev, s->x);
+		  if (gsl_vector_isnull(prev))
+			  repeated++;
+		  else
+			  repeated = 0;
+		  if (repeated > 10){
+			  printf("ERROR - QUITTING BECAUSE EXCESSIVE REPEATS!!!\n");
+			  status = GSL_SUCCESS;
+		  }
+		  gsl_vector_set(prev, 0, gsl_vector_get(s->x, 0));
+		  gsl_vector_set(prev, 1, gsl_vector_get(s->x, 1));
+		  gsl_vector_set(prev, 2, gsl_vector_get(s->x, 2));
+		  gsl_vector_set(prev, 3, gsl_vector_get(s->x, 3));
+		   */ 
+
+
+#ifdef _VERBOSE
+		  if (status == GSL_SUCCESS)
+		  {
+			  printf("converged to minimum at\n");
+		  }
+
+		  printf("%5d %.17f %.17f %.17f %.17f f() = %.17f size = %.3f\n",
+			  iter,
+			  gsl_vector_get(s->x, 0),
+			  gsl_vector_get(s->x, 1),
+			  gsl_vector_get(s->x, 2),
+			  gsl_vector_get(s->x, 3),
+			  s->fval, size);
+#endif
+	  } while (status == GSL_CONTINUE && iter < 10000);
+
+	  c_p[0] = fabs(gsl_vector_get(s->x, 0));
+	  c_p[1] = fabs(gsl_vector_get(s->x, 1));
+	  c_p[2] = fabs(gsl_vector_get(s->x, 2));
+	  c_p[3] = fabs(gsl_vector_get(s->x, 3));
+
+	  gsl_vector_free(x);
+	  gsl_vector_free(ss);
+	  gsl_multimin_fminimizer_free(s);
+#else
       d_fminsearch(c_p);
+#endif
 
-      /* 'IMT_analysis_April2017:630' fprintf('  p=[%f %f %f %f]\n',p(1),p(2),p(3),p(4)); */
-      t_cfprintf(c_p[0], c_p[1], c_p[2], c_p[3]);
+
+	  printf("  p=[%f %f %f %f]\n", c_p[0], c_p[1], c_p[2], c_p[3]);
 
       /* 'IMT_analysis_April2017:631' pd(i,:)=p; */
       for (itmp = 0; itmp < 4; itmp++) {
         b_pd[emgfitnomle + 45 * itmp] = c_p[itmp];
       }
 
-      /* confint(:,:,i)=conf1(:); */
-      /* 'IMT_analysis_April2017:635' confint(:,:,i)=[0.1, 0.1, 0.1, 0.1 ; 0.1, 0.1, 0.1, 0.1]; */
-      /* [l,flag(i)]=convolv_2invG_small_sigma_test_var(data,p(1),p(2),p(3),p(4),.01,4); */
+
       /* 'IMT_analysis_April2017:639' [l,hp(i),flag(i),E(i)]=convolv_2invG_adapt_nov(data,p(1),p(2),p(3),p(4),.01); */
-      b_convolv_2invG_adapt_nov(c_p[0], c_p[1], c_p[2], c_p[3], l, &mtmp, &flag,
-        &E);
+      b_convolv_2invG_adapt_nov(c_p[0], c_p[1], c_p[2], c_p[3], l, &mtmp, &flag, &E);
 
       /* 'IMT_analysis_April2017:640' l=sum(log(l)); */
       /* 'IMT_analysis_April2017:641' ld(i)=l; */
       /* 'IMT_analysis_April2017:642' fprintf('  l=%f hp=%f flag=%f E=%f\n\n',l,hp(i),flag(i),E(i)); */
       b_log(l);
-      u_cfprintf(sum(l), mtmp, flag, E);
+	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), mtmp, flag, E);
     }
 
     /*  we previously optimized with a larger step size, recalculate with */
     /*  a smaller stepsize after the fact */
-    /* 'IMT_analysis_April2017:647' fprintf('recalculating canidate solutions with smaller stepsize\n'); */
-    v_cfprintf();
+	printf("recalculating canidate solutions with smaller stepsize\n");
 
     /* 'IMT_analysis_April2017:648' ld_true=zeros(length(ld),1); */
     /* 'IMT_analysis_April2017:649' for i=1:length(ld) */
@@ -1115,16 +1137,47 @@ void IMT_analysis_April2017(const char *model)
       }
     }
 
-    /* 'IMT_analysis_April2017:656' pd_max = pd(row_ld,:); */
-    /* 'IMT_analysis_April2017:657' confint_max=confint(:,:,row_ld); */
-    /* 'IMT_analysis_April2017:658' fprintf('max_ld=%f row_ld=%f\n',max_ld,row_ld); */
-    m_cfprintf(mtmp, itmp + 1);
 
-    /* 'IMT_analysis_April2017:659' fprintf('pd_max=[%f %f %f %f]\n\n',pd_max(1),pd_max(2),pd_max(3),pd_max(4)); */
-    w_cfprintf(b_pd[itmp], b_pd[45 + itmp], b_pd[90 + itmp], b_pd[135 + itmp]);
+	printf("max_ld=%f row_ld=%f\n", mtmp, (double) itmp + 1);
+	printf("pd_max=[%f %f %f %f]\n\n", b_pd[itmp], b_pd[45 + itmp], b_pd[90 + itmp], b_pd[135 + itmp]);
 
     /*  END FUNCTION FIT_TWOSTAGE */
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  
@@ -1134,7 +1187,8 @@ void IMT_analysis_April2017(const char *model)
   if (threestagefitnomle == 1) {
     /*  BEGIN FUNCTION FIT_THREESTAGE */
     /* 'IMT_analysis_April2017:821' fprintf('threestagefitnomle\n'); */
-    x_cfprintf();
+    //x_cfprintf();
+	  printf("threestagefitnomle\n");
 
     /*  prepare statistical parameters */
     /* 'IMT_analysis_April2017:823' vry = [0.1 0.7]'; */
@@ -1196,12 +1250,16 @@ void IMT_analysis_April2017(const char *model)
     /* 'IMT_analysis_April2017:863' for i=1:length(P)-3 */
     for (emgfitnomle = 0; emgfitnomle < 17; emgfitnomle++) {
       /* 'IMT_analysis_April2017:864' fprintf('i=%f\n',i); */
-      d_cfprintf(1.0 + (double)emgfitnomle);
+      //d_cfprintf(1.0 + (double)emgfitnomle);
+		printf("i=%f\n", 1.0 + (double)emgfitnomle);
 
       /* 'IMT_analysis_April2017:865' fprintf('  P=[%f %f %f %f %f %f]\n',P(i,1),P(i,2),P(i,3),P(i,4),P(i,5),P(i,6)); */
-      y_cfprintf(d_P[emgfitnomle], d_P[20 + emgfitnomle], d_P[40 + emgfitnomle],
+      /*y_cfprintf(d_P[emgfitnomle], d_P[20 + emgfitnomle], d_P[40 + emgfitnomle],
                  d_P[60 + emgfitnomle], d_P[80 + emgfitnomle], d_P[100 +
-                 emgfitnomle]);
+                 emgfitnomle]);*/
+		printf("  P=[%f %f %f %f %f %f]\n", d_P[emgfitnomle], d_P[20 + emgfitnomle], d_P[40 + emgfitnomle],
+			d_P[60 + emgfitnomle], d_P[80 + emgfitnomle], d_P[100 +
+			emgfitnomle]);
 
       /* 'IMT_analysis_April2017:866' x0=P(i,:); */
       /* g=@(x,m1,s1,m2,s2,m3,s3)convolv_3invG_nov(x,m1,s1,m2,s2,m3,s3,.01); */
@@ -1212,10 +1270,87 @@ void IMT_analysis_April2017(const char *model)
         d_p[itmp] = d_P[emgfitnomle + 20 * itmp];
       }
 
+
+#ifdef _GSL_MINIMIZE
+	  // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
+
+	  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+	  gsl_multimin_fminimizer *s = NULL;
+	  gsl_vector *ss, *x;
+	  gsl_multimin_function minex_func;
+
+	  size_t iter = 0;
+	  int status;
+	  double size;
+
+	  /* Starting point */
+	  x = gsl_vector_alloc(6);
+	  gsl_vector_set(x, 0, d_p[0]);
+	  gsl_vector_set(x, 1, d_p[1]);
+	  gsl_vector_set(x, 2, d_p[2]);
+	  gsl_vector_set(x, 3, d_p[3]);
+	  gsl_vector_set(x, 4, d_p[4]);
+	  gsl_vector_set(x, 5, d_p[5]);
+
+	  /* Set initial step sizes to 1 */
+	  ss = gsl_vector_alloc(6);
+	  gsl_vector_set_all(ss, 1.0);
+
+	  /* Initialize method and iterate */
+	  minex_func.n = 6;
+	  minex_func.f = convolv_3invG_nov_loglikelihood;
+	  minex_func.params = (void *)data;
+
+	  s = gsl_multimin_fminimizer_alloc(T, 6);
+	  gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+
+	  do
+	  {
+		  iter++;
+		  status = gsl_multimin_fminimizer_iterate(s);
+
+		  if (status)
+			  break;
+
+		  size = gsl_multimin_fminimizer_size(s);
+		  status = gsl_multimin_test_size(size, 1e-4);
+
+#ifdef _VERBOSE
+		  if (status == GSL_SUCCESS)
+		  {
+			  printf("converged to minimum at\n");
+		  }
+
+		  printf("%5d %.17f %.17f %.17f %.17f %.17f %.17f f() = %.17f size = %.3f\n",
+			  iter,
+			  gsl_vector_get(s->x, 0),
+			  gsl_vector_get(s->x, 1),
+			  gsl_vector_get(s->x, 2),
+			  gsl_vector_get(s->x, 3),
+			  gsl_vector_get(s->x, 4),
+			  gsl_vector_get(s->x, 5),
+			  s->fval, size);
+#endif
+	  } while (status == GSL_CONTINUE && iter < 10000);
+
+	  d_p[0] = fabs(gsl_vector_get(s->x, 0));
+	  d_p[1] = fabs(gsl_vector_get(s->x, 1));
+	  d_p[2] = fabs(gsl_vector_get(s->x, 2));
+	  d_p[3] = fabs(gsl_vector_get(s->x, 3));
+	  d_p[4] = fabs(gsl_vector_get(s->x, 4));
+	  d_p[5] = fabs(gsl_vector_get(s->x, 5));
+
+	  gsl_vector_free(x);
+	  gsl_vector_free(ss);
+	  gsl_multimin_fminimizer_free(s);
+#else
       e_fminsearch(d_p);
+#endif
 
       /* 'IMT_analysis_April2017:873' fprintf('  p=[%f %f %f %f %f %f]\n',p(1),p(2),p(3),p(4),p(5),p(6)); */
-      ab_cfprintf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5]);
+      //ab_cfprintf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5]);
+	  printf("  p=[%f %f %f %f %f %f]\n", d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5]);
+
 
       /* 'IMT_analysis_April2017:874' pd(i,:)=p; */
       for (itmp = 0; itmp < 6; itmp++) {
@@ -1231,13 +1366,15 @@ void IMT_analysis_April2017(const char *model)
       /* 'IMT_analysis_April2017:878' ld(i)=l; */
       /* 'IMT_analysis_April2017:879' fprintf('  l=%f hp=%f flag=%f E=%f\n\n',l,hp(i),flag(i),E(i)); */
       b_log(l);
-      u_cfprintf(sum(l), mtmp, flag, E);
+      //u_cfprintf(sum(l), mtmp, flag, E);
+	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), mtmp, flag, E);
     }
 
     /*  we previously optimized with a larger step size, recalculate with */
     /*  a smaller stepsize after the fact */
     /* 'IMT_analysis_April2017:884' fprintf('Recalculating canidate solutions with smaller stepsize\n'); */
-    bb_cfprintf();
+    //bb_cfprintf();
+	printf("Recalculating canidate solutions with smaller stepsize\n");
 
     /* 'IMT_analysis_April2017:885' ld_true=zeros(length(ld),1); */
     /* 'IMT_analysis_April2017:886' for i=1:length(ld) */
@@ -1287,11 +1424,14 @@ void IMT_analysis_April2017(const char *model)
     /* 'IMT_analysis_April2017:893' pd_max = pd(row_ld,:); */
     /* confint_max=confint(:,:,row_ld); */
     /* 'IMT_analysis_April2017:895' fprintf('max_ld=%f row_ld=%f\n',max_ld,row_ld); */
-    m_cfprintf(mtmp, itmp + 1);
+    //m_cfprintf(mtmp, itmp + 1);
+	printf("max_ld=%f row_ld=%f\n", mtmp, (double) itmp + 1);
 
     /* 'IMT_analysis_April2017:896' fprintf('pd_max=[%f %f %f %f %f %f]\n\n',pd_max(1),pd_max(2),pd_max(3),pd_max(4),pd_max(5),pd_max(6)); */
-    cb_cfprintf(c_pd[itmp], c_pd[20 + itmp], c_pd[40 + itmp], c_pd[60 + itmp],
+    /*cb_cfprintf(c_pd[itmp], c_pd[20 + itmp], c_pd[40 + itmp], c_pd[60 + itmp],
                 c_pd[80 + itmp], c_pd[100 + itmp]);
+	printf("pd_max=[%f %f %f %f %f %f]\n\n", c_pd[itmp], c_pd[20 + itmp], c_pd[40 + itmp], c_pd[60 + itmp],
+		c_pd[80 + itmp], c_pd[100 + itmp]);
 
     /*  END FUNCTION FIT_THREESTAGE */
   }

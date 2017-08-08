@@ -27,6 +27,8 @@
 #include "onestagepdf_lag.h"
 #include "IMT_analysis_April2017_rtwutil.h"
 
+#define _GSL_GP_MAX_FIXED
+
 /* Function Definitions */
 
 /*
@@ -35,6 +37,9 @@
 void b_convolv_2invG_nov(const emxArray_real_T *t, double m1, double s1, double
   m2, double s2, double h, emxArray_real_T *P, double *flag)
 {
+
+
+
   int b_flag;
   int n;
   double y[2];
@@ -336,7 +341,11 @@ void b_convolv_2invG_nov(const emxArray_real_T *t, double m1, double s1, double
       /* distribtion, find the maximum of the absolute value of the  */
       /* derivative of the second pdf. */
       /* 'convolv_2invG_nov:55' gp=gp_max(m(2),s(2)); */
+#ifdef _GSL_GP_MAX_FIXED
+      kd = gp_max_fixed(m[1], s[1]);
+#else
       kd = gp_max(m[1], s[1]);
+#endif
 
       /* determine the radius, r, of a small interval over which the second pdf, g, is */
       /* approximately constant and so that g(t) is small for t<r.   */
@@ -1728,7 +1737,11 @@ void c_convolv_2invG_nov(double m1, double s1, double m2, double s2, double P
     /* distribtion, find the maximum of the absolute value of the  */
     /* derivative of the second pdf. */
     /* 'convolv_2invG_nov:55' gp=gp_max(m(2),s(2)); */
-    gp = gp_max(m[1], s[1]);
+#ifdef _GSL_GP_MAX_FIXED
+    gp = gp_max_fixed(m[1], s[1]);
+#else
+	gp = gp_max(m[1], s[1]);
+#endif
 
     /* determine the radius, r, of a small interval over which the second pdf, g, is */
     /* approximately constant and so that g(t) is small for t<r.   */
@@ -2466,7 +2479,11 @@ void convolv_2invG_nov(double m1, double s1, double m2, double s2, double P[221]
     /* distribtion, find the maximum of the absolute value of the  */
     /* derivative of the second pdf. */
     /* 'convolv_2invG_nov:55' gp=gp_max(m(2),s(2)); */
+#ifdef _GSL_GP_MAX_FIXED
+    gp = gp_max_fixed(m[1], s[1]);
+#else
     gp = gp_max(m[1], s[1]);
+#endif
 
     /* determine the radius, r, of a small interval over which the second pdf, g, is */
     /* approximately constant and so that g(t) is small for t<r.   */
@@ -3291,7 +3308,11 @@ void d_convolv_2invG_nov(const double t[22001], double m1, double s1, double m2,
       /* distribtion, find the maximum of the absolute value of the  */
       /* derivative of the second pdf. */
       /* 'convolv_2invG_nov:55' gp=gp_max(m(2),s(2)); */
+#ifdef _GSL_GP_MAX_FIXED
+      kd = gp_max_fixed(m[1], s[1]);
+#else
       kd = gp_max(m[1], s[1]);
+#endif
 
       /* determine the radius, r, of a small interval over which the second pdf, g, is */
       /* approximately constant and so that g(t) is small for t<r.   */

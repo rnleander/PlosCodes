@@ -24,7 +24,8 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
-extern double gp_max(double m, double s);
+
+extern double gp_max_fixed(double m, double s);
 
 #endif
 

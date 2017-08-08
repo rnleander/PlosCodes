@@ -27,6 +27,9 @@
 extern void onestagepdf_prime(const creal_T t_data[], const int t_size[1],
   double m, double s, creal_T Y_data[], int Y_size[1]);
 
+extern void onestagepdf_prime_fixed(const double t[], int t_size, double m, double s, double Y[]);
+
+
 #endif
 
 /* End of code generation (onestagepdf_prime.h) */

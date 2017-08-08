@@ -18,7 +18,27 @@
 #include "IMT_analysis_April2017_emxutil.h"
 #include "gp_max.h"
 
+#define _GSL_GP_MAX_FIXED
+
 /* Function Definitions */
+
+int checktailmass(const double m_a, const double s_a, const double m_b, const double s_b, double T2, const double sd_a, const double sd_b)
+{
+	double m[2];
+	double s[2];
+	double sd[2];
+	m[0] = m_a;
+	m[1] = m_b;
+	s[0] = s_a;
+	s[1] = s_b;
+	sd[0] = sd_a;
+	sd[1] = sd_b;
+
+	if (tailmass(m, s, T2, sd) <= (T2 / 3.0))
+		return 1;
+	else
+		return 0;
+}
 
 /*
  * function check2 = tailmass( m, s, eps, T2, sd )
@@ -55,7 +75,11 @@ double tailmass(const double m[2], const double s[2], double T2, const double
   /*  point-mass distribtion, find the maximum of the absolute value */
   /*  of the derivative of the second pdf. */
   /* 'tailmass:14' gp=gp_max(m(2),s(2)); */
+#ifdef _GSL_GP_MAX_FIXED
+  gp = gp_max_fixed(m[1], s[1]);
+#else
   gp = gp_max(m[1], s[1]);
+#endif
 
   /*  determine the radius, r, of a small interval over which the */
   /*  1. second pdf, g, is approximately constant, i.e. changes by less than eps/3 */

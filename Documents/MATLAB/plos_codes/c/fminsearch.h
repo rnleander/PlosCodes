@@ -29,6 +29,8 @@ extern double c_fminsearch(double x[3]);
 extern double d_fminsearch(double x[4]);
 extern double e_fminsearch(double x[6]);
 extern double fminsearch(double x[3]);
+extern double fminsearch_generalized(double x[3], void(*pdf)(), const double data[266]);
+
 
 #endif
 

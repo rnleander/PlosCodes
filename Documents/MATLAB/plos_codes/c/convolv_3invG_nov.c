@@ -26,6 +26,10 @@
 #include "sort1.h"
 #include "abs.h"
 #include "IMT_analysis_April2017_rtwutil.h"
+#include "gsl/gsl_multimin.h"
+
+
+#define _GSL_GP_MAX_FIXED
 
 /* Function Definitions */
 
@@ -672,8 +676,14 @@ void b_convolv_3invG_nov(double m1, double s1, double m2, double s2, double m3,
     /* distribtion, find the maximum of the absolute value of the  */
     /* derivative of the second pdf. */
     /* 'convolv_3invG_nov:34' gp=min(gp_max(m(2),s(2)),gp_max(m(3),s(3))); */
-    varargin_2 = gp_max(m[1], s[1]);
-    varargin_3 = gp_max(m[2], s[2]);
+#ifdef _GSL_GP_MAX_FIXED
+
+    varargin_2 = gp_max_fixed(m[1], s[1]);
+    varargin_3 = gp_max_fixed(m[2], s[2]);
+#else
+	  varargin_2 = gp_max(m[1], s[1]);
+	  varargin_3 = gp_max(m[2], s[2]);
+#endif
 
     /* define the radius, r, of a small interval over which the second pdf is */
     /* nearly constant and close to zero for t<r.  */
@@ -1889,8 +1899,13 @@ void c_convolv_3invG_nov(double m1, double s1, double m2, double s2, double m3,
     /* distribtion, find the maximum of the absolute value of the  */
     /* derivative of the second pdf. */
     /* 'convolv_3invG_nov:34' gp=min(gp_max(m(2),s(2)),gp_max(m(3),s(3))); */
-    varargin_2 = gp_max(m[1], s[1]);
-    varargin_3 = gp_max(m[2], s[2]);
+#ifdef _GSL_GP_MAX_FIXED
+    varargin_2 = gp_max_fixed(m[1], s[1]);
+    varargin_3 = gp_max_fixed(m[2], s[2]);
+#else
+	  varargin_2 = gp_max(m[1], s[1]);
+	  varargin_3 = gp_max(m[2], s[2]);
+#endif
 
     /* define the radius, r, of a small interval over which the second pdf is */
     /* nearly constant and close to zero for t<r.  */
@@ -2948,6 +2963,42 @@ void c_convolv_3invG_nov(double m1, double s1, double m2, double s2, double m3,
   emxFree_real_T(&y);
 }
 
+
+double convolv_3invG_nov_loglikelihood(const gsl_vector *v, void *params)
+{
+	double *data = (double *)params;
+
+	double m1 = gsl_vector_get(v, 0);
+	double s1 = gsl_vector_get(v, 1);
+	double m2 = gsl_vector_get(v, 2);
+	double s2 = gsl_vector_get(v, 3);
+	double m3 = gsl_vector_get(v, 4);
+	double s3 = gsl_vector_get(v, 5);
+
+	double penalty = 0;
+	if (m1 < 0 || s1 < 0 || m2 < 0 || s2 < 0 || m3 < 0 || s3 < 0)
+		penalty = 1000;
+
+	m1 = fabs(m1);
+	s1 = fabs(s1);
+	m2 = fabs(m2);
+	s2 = fabs(s2);
+	m3 = fabs(m3);
+	s3 = fabs(s3);
+
+	double Y[266];
+
+	convolv_3invG_nov(m1, s1, m2, s2, m3, s3, Y);
+
+	double loglikelihood = 0;
+	for (int i = 0; i < 266; i++) {
+		loglikelihood += log(Y[i]);
+	}
+
+	return penalty - loglikelihood;
+}
+
+
 /*
  * function [P,h,flag,E]=convolv_3invG_nov(t,m1,s1,m2,s2,m3,s3,h)
  */
@@ -3159,8 +3210,13 @@ void convolv_3invG_nov(double m1, double s1, double m2, double s2, double m3,
     /* distribtion, find the maximum of the absolute value of the  */
     /* derivative of the second pdf. */
     /* 'convolv_3invG_nov:34' gp=min(gp_max(m(2),s(2)),gp_max(m(3),s(3))); */
-    varargin_2 = gp_max(m[1], s[1]);
-    varargin_3 = gp_max(m[2], s[2]);
+#ifdef _GSL_GP_MAX_FIXED
+    varargin_2 = gp_max_fixed(m[1], s[1]);
+    varargin_3 = gp_max_fixed(m[2], s[2]);
+#else
+	  varargin_2 = gp_max(m[1], s[1]);
+	  varargin_3 = gp_max(m[2], s[2]);
+#endif
 
     /* define the radius, r, of a small interval over which the second pdf is */
     /* nearly constant and close to zero for t<r.  */

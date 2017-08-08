@@ -40,6 +40,10 @@ extern void f_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y,
 extern void g_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y,
   const double t[266], const emxArray_real_T *x, double P0[266], double *logP0);
 
+
+extern void approxconvolv_replacement(const double z[], const double y[], const double X
+	[], const double x[], double Y[], double *logP0, int size_xyz, int size_XY, double h);
+
 #endif
 
 /* End of code generation (approxconvolv.h) */

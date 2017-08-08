@@ -9,7 +9,7 @@
  *
  */
 
-/* Include files */
+ /* Include files */
 #include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
 #include "approxconvolv.h"
@@ -18,8 +18,95 @@
 #include "conv.h"
 #include "sum.h"
 #include "log.h"
+#include "float.h"
+
+#define _VERBOSE
+
 
 /* Function Definitions */
+
+void approxconvolv_replacement(const double z[], const double y[], const double X
+	[], const double x[], double Y[], double *logP0, int size_xyz, int size_XY, double h) {
+	// function [P0, logP0] = approxconvolv( z, y, h, n, t, I, x )
+
+	// Initialize C big enough for the convolution
+	int size_conv = 2 * size_xyz;
+	double * C = malloc(size_conv * sizeof(double));
+	for (int i = 0; i < size_conv; i++) {
+		C[i] = 0;
+	}
+
+	// Do the convolution
+	for (int i = 0; i < size_xyz; i++) {
+		for (int j = 0; j < size_xyz; j++) {
+			C[i + j] += z[i] * y[j] * h;
+		}
+	}
+
+	// Display the convolution
+#ifdef _VERBOSE
+	printf("replacement_conv = \n");
+	for (int i = 0; i < size_conv; i++) {
+		if (i % 8 == 0)
+			printf("\n");
+		printf("%f ", C[i]);
+	}
+	printf("\n\n");
+#endif
+
+	// Find the largest value in X
+	int MaxX = 0;
+	for (int i = 0; i < size_XY; i++) {
+		if (X[i] > MaxX)
+			MaxX = X[i];
+	}
+
+	for (int i = 0; i < size_XY; i++) {
+
+		int computedIdx;
+		int computedIdxLower = (int)floor(X[i] / h);
+		int computedIdxUpper = (int)floor(X[i] / h) + 1;
+		if (computedIdxUpper > size_xyz) {
+			computedIdxUpper = computedIdxUpper - 1;
+		}
+		double deltaLower = fabs(X[i] - x[computedIdxLower]);
+		double deltaUpper = fabs(X[i] - x[computedIdxUpper]);
+		if (deltaLower <= deltaUpper)
+			computedIdx = computedIdxLower;
+		else
+			computedIdx = computedIdxUpper;
+
+		if (X[i] > 0 && computedIdx > 0)
+			Y[i] = C[computedIdx];
+		else
+			Y[i] = 0;
+
+		
+	}
+	*logP0 = 0;
+	for (int i = 0; i < size_XY; i++) {
+		*logP0 += log(Y[i]);
+	}
+
+	for (int i = 0; i < size_XY; i++) {
+		if (Y[i] == 0)
+			Y[i] = 2.2250738585072014E-308;
+	}
+
+#ifdef _VERBOSE
+	printf("approxconvolv_replacement = \n");
+	for (int i = 0; i < size_XY; i++) {
+		if (i % 8 == 0)
+			printf("\n");
+		printf("%f ", Y[i]);
+	}
+	printf("\n\n");
+#endif
+	
+
+
+}
+
 
 /*
  * function [P0, logP0] = approxconvolv( z, y, h, n, t, I, x )
@@ -53,6 +140,17 @@ void approxconvolv(const double z[2201], const double y[2201], const double t
   for (ixstart = 0; ixstart < 4401; ixstart++) {
     C[ixstart] *= 0.01;
   }
+
+  // Display the convolution
+#ifdef _VERBOSE
+  printf("conv = \n");
+  for (int i = 0; i < 4401; i++) {
+	  if (i % 8 == 0)
+		  printf("\n");
+	  printf("%f ", C[i]);
+  }
+  printf("\n\n");
+#endif
 
   /* 'approxconvolv:15' N=length(y); */
   /*  only the first N elements of the convolution are valid */
@@ -129,6 +227,16 @@ void approxconvolv(const double z[2201], const double y[2201], const double t
   *logP0 = sum(dv65);
 
   /*  END FUNCTION DOTHECONVOLUTION_INNER */
+
+#ifdef _VERBOSE
+  printf("approxconvolv = \n");
+  for (int i = 0; i < 266; i++) {
+	  if (i % 8 == 0)
+		  printf("\n");
+	  printf("%f ", P0[i]);
+  }
+  printf("\n\n");
+#endif
 }
 
 /*
@@ -193,6 +301,18 @@ void b_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y, double
   for (n = 0; n < ixstart; n++) {
     C->data[n] *= h;
   }
+
+  // Display the convolution
+#ifdef _VERBOSE
+  printf("b_conv = \n");
+  for (int i = 0; i < ixstart; i++) {
+	  if (i % 8 == 0)
+		  printf("\n");
+	  printf("%f ", C->data[i]);
+  }
+  printf("\n\n");
+#endif
+
 
   /* 'approxconvolv:15' N=length(y); */
   /*  only the first N elements of the convolution are valid */
@@ -298,6 +418,16 @@ void b_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y, double
   }
 
   /*  END FUNCTION DOTHECONVOLUTION_INNER */
+
+#ifdef _VERBOSE
+  printf("b_approxconvolv = \n");
+  for (int i = 0; i < 266; i++) {
+	  if (i % 8 == 0)
+		  printf("\n");
+	  printf("%f ", P0[i]);
+  }
+  printf("\n\n");
+#endif
 }
 
 /*

@@ -22,6 +22,7 @@
 #include "rtwtypes.h"
 #include "omp.h"
 #include "IMT_analysis_April2017_types.h"
+#include "gsl/gsl_multimin.h"
 
 /* Function Declarations */
 extern void b_onestagepdf2(const double t[2201], double mu, double s, double Y
@@ -41,6 +42,13 @@ extern void i_onestagepdf2(const double t[2201], double mu, double s, double Y
   [2201]);
 extern void j_onestagepdf2(const double t[22001], double mu, double s, double Y
   [22001]);
+
+extern void waldpdf(const double X[], double mu, double s, double Y[], int size_XY);
+
+
+extern double wald_loglikelihood(const gsl_vector *v, void *params);
+
+
 extern void onestagepdf2(const double t[266], double mu, double s, double Y[266]);
 
 #endif

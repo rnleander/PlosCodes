@@ -22,10 +22,15 @@
 #include "rtwtypes.h"
 #include "omp.h"
 #include "IMT_analysis_April2017_types.h"
+#include "gsl/gsl_multimin.h"
 
 /* Function Declarations */
-extern void emgpdf(const double X[266], double l, double m, double s, double Y
-                   [266]);
+extern void emgpdf_old(const double X[266], double l, double m, double s, double Y[266]);
+
+extern double emgpdf_loglikelihood(const gsl_vector *v, void *params);
+
+extern void emgpdf(const double X[266], double l, double m, double s, double Y[266]);
+
 
 #endif
 
