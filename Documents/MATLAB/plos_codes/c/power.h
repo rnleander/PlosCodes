@@ -24,10 +24,15 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void b_power(const double a[2], double y[2]);
 extern void c_power(const double a[2], double y[2]);
 extern void d_power(const double a[2201], double y[2201]);
+#endif
+
 extern void e_power(const emxArray_real_T *a, emxArray_real_T *y);
+
+#ifdef _OLD_MATLAB_CODE
 extern void f_power(const double a[22001], double y[22001]);
 extern void g_power(const double a[3], double y[3]);
 extern void h_power(const double a[3], double y[3]);
@@ -37,6 +42,7 @@ extern void k_power(const emxArray_real_T *a, emxArray_real_T *y);
 extern void l_power(const emxArray_real_T *a, emxArray_real_T *y);
 extern void m_power(const emxArray_real_T *a, emxArray_real_T *y);
 extern void power(const double a[2], double y[2]);
+#endif
 
 #endif
 

@@ -63,6 +63,7 @@ void emgpdf(const double X[266], double l, double m, double s, double Y[266])
 	}
 }
 
+#ifdef _OLD_MATLAB_CODE
 void emgpdf_old(const double X[266], double l, double m, double s, double Y[266])
 {
   double y;
@@ -212,5 +213,6 @@ void emgpdf_old(const double X[266], double l, double m, double s, double Y[266]
     }
   }
 }
+#endif
 
 /* End of code generation (emgpdf.c) */

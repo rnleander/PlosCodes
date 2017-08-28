@@ -19,6 +19,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 boolean_T b_strcmp(const char a[3])
 {
   boolean_T b_bool;
@@ -44,5 +45,6 @@ boolean_T b_strcmp(const char a[3])
 
   return b_bool;
 }
+#endif
 
 /* End of code generation (strcmp.c) */

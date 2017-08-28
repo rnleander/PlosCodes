@@ -24,6 +24,7 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void b_conv(const emxArray_real_T *A, const emxArray_real_T *B,
                    emxArray_real_T *C);
 extern void c_conv(const double A[22001], const double B[22001], double C[44001]);
@@ -34,6 +35,7 @@ extern void f_conv(const emxArray_real_T *A, const emxArray_real_T *B,
                    emxArray_real_T *C);
 extern void g_conv(const double A[2201], const double B[2201], double C[4401]);
 extern void h_conv(const double A[22001], const double B[22001], double C[44001]);
+#endif
 
 #endif
 

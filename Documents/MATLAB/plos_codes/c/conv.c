@@ -20,6 +20,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_conv(const emxArray_real_T *A, const emxArray_real_T *B, emxArray_real_T *
             C)
 {
@@ -59,10 +60,12 @@ void b_conv(const emxArray_real_T *A, const emxArray_real_T *B, emxArray_real_T 
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void c_conv(const double A[22001], const double B[22001], double C[44001])
 {
   int k;
@@ -74,10 +77,12 @@ void c_conv(const double A[22001], const double B[22001], double C[44001])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void conv(const double A[2201], const double B[2201], double C[4401])
 {
   int k;
@@ -89,10 +94,12 @@ void conv(const double A[2201], const double B[2201], double C[4401])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void d_conv(const double A[221], const double B[221], double C[441])
 {
   int k;
@@ -104,10 +111,12 @@ void d_conv(const double A[221], const double B[221], double C[441])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void e_conv(const double A[221], const double B[221], double C[441])
 {
   int k;
@@ -119,10 +128,12 @@ void e_conv(const double A[221], const double B[221], double C[441])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void f_conv(const emxArray_real_T *A, const emxArray_real_T *B, emxArray_real_T *
             C)
 {
@@ -161,10 +172,12 @@ void f_conv(const emxArray_real_T *A, const emxArray_real_T *B, emxArray_real_T 
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void g_conv(const double A[2201], const double B[2201], double C[4401])
 {
   int k;
@@ -176,10 +189,12 @@ void g_conv(const double A[2201], const double B[2201], double C[4401])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void h_conv(const double A[22001], const double B[22001], double C[44001])
 {
   int k;
@@ -191,5 +206,6 @@ void h_conv(const double A[22001], const double B[22001], double C[44001])
     }
   }
 }
+#endif
 
 /* End of code generation (conv.c) */

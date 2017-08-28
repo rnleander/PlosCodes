@@ -20,6 +20,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void sortrows(double y[162], double ndx[81])
 {
   int k;
@@ -113,5 +114,6 @@ void sortrows(double y[162], double ndx[81])
     ndx[k] = idx[k];
   }
 }
+#endif
 
 /* End of code generation (sortrows.c) */

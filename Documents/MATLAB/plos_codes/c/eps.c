@@ -19,6 +19,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 double eps(double x)
 {
   double r;
@@ -38,5 +39,6 @@ double eps(double x)
 
   return r;
 }
+#endif
 
 /* End of code generation (eps.c) */

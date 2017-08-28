@@ -24,7 +24,9 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern creal_T recip(const creal_T y);
+#endif
 
 #endif
 

@@ -34,6 +34,7 @@
 /*
  * function [P,flag]=convolv_2invG_nov(t,m1,s1,m2,s2,h)
  */
+#ifdef _OLD_MATLAB_CODE
 void b_convolv_2invG_nov(const emxArray_real_T *t, double m1, double s1, double
   m2, double s2, double h, emxArray_real_T *P, double *flag)
 {
@@ -1111,10 +1112,12 @@ void b_convolv_2invG_nov(const emxArray_real_T *t, double m1, double s1, double
 
   *flag = b_flag;
 }
+#endif
 
 /*
  * function [P,flag]=convolv_2invG_nov(t,m1,s1,m2,s2,h)
  */
+#ifdef _OLD_MATLAB_CODE
 void c_convolv_2invG_nov(double m1, double s1, double m2, double s2, double P
   [2201], double *flag)
 {
@@ -2286,10 +2289,12 @@ void c_convolv_2invG_nov(double m1, double s1, double m2, double s2, double P
     /* 'convolv_2invG_nov:152' logP=sum(log(P)); */
   }
 }
+#endif
 
 /*
  * function [P,flag]=convolv_2invG_nov(t,m1,s1,m2,s2,h)
  */
+#ifdef _OLD_MATLAB_CODE
 void convolv_2invG_nov(double m1, double s1, double m2, double s2, double P[221],
   double *flag)
 {
@@ -3028,10 +3033,12 @@ void convolv_2invG_nov(double m1, double s1, double m2, double s2, double P[221]
     /* 'convolv_2invG_nov:152' logP=sum(log(P)); */
   }
 }
+#endif
 
 /*
  * function [P,flag]=convolv_2invG_nov(t,m1,s1,m2,s2,h)
  */
+#ifdef _OLD_MATLAB_CODE
 void d_convolv_2invG_nov(const double t[22001], double m1, double s1, double m2,
   double s2, double P[22001], double *flag)
 {
@@ -3943,5 +3950,6 @@ void d_convolv_2invG_nov(const double t[22001], double m1, double s1, double m2,
     emxFree_real_T(&c_y);
   }
 }
+#endif
 
 /* End of code generation (convolv_2invG_nov.c) */

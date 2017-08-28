@@ -20,9 +20,12 @@
 #include <math.h>
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 static double rt_atan2d_snf(double u0, double u1);
+#endif
 
 /* Function Definitions */
+#ifdef _OLD_MATLAB_CODE
 static double rt_atan2d_snf(double u0, double u1)
 {
   double y;
@@ -58,7 +61,7 @@ static double rt_atan2d_snf(double u0, double u1)
 
   return y;
 }
-
+#endif
 
 void onestagepdf_prime_fixed(const double t[], int t_size, double m, double s, double Y[])
 {
@@ -91,6 +94,7 @@ void onestagepdf_prime_fixed(const double t[], int t_size, double m, double s, d
 /*
  * function Y=onestagepdf_prime(t,m,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void onestagepdf_prime(const creal_T t_data[], const int t_size[1], double m,
   double s, creal_T Y_data[], int Y_size[1])
 {
@@ -300,5 +304,5 @@ void onestagepdf_prime(const creal_T t_data[], const int t_size[1], double m,
     Y_data[i1].im = re * Y_data[i1].im + a * r;
   }
 }
-
+#endif
 /* End of code generation (onestagepdf_prime.c) */

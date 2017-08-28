@@ -24,8 +24,11 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void onestagepdf_prime(const creal_T t_data[], const int t_size[1],
   double m, double s, creal_T Y_data[], int Y_size[1]);
+#endif
+
 
 extern void onestagepdf_prime_fixed(const double t[], int t_size, double m, double s, double Y[]);
 

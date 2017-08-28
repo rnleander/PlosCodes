@@ -19,6 +19,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_sortIdx(const double x[3], int idx[3])
 {
   boolean_T p;
@@ -86,10 +87,12 @@ void b_sortIdx(const double x[3], int idx[3])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void c_sortIdx(const double x[5], int idx[5])
 {
   int k;
@@ -180,10 +183,12 @@ void c_sortIdx(const double x[5], int idx[5])
     i = i2;
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void d_sortIdx(const double x[7], int idx[7])
 {
   int k;
@@ -274,10 +279,12 @@ void d_sortIdx(const double x[7], int idx[7])
     i = i2;
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void sortIdx(const double x[4], int idx[4])
 {
   int k;
@@ -359,5 +366,6 @@ void sortIdx(const double x[4], int idx[4])
     i = i2;
   }
 }
+#endif
 
 /* End of code generation (sortIdx.c) */

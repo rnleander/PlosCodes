@@ -24,6 +24,7 @@
 /*
  * function Y=onestagepdf_lag(X,m,s,l)
  */
+#ifdef _OLD_MATLAB_CODE
 void b_onestagepdf_lag(const double X[221], double m, double s, double l, double
   Y[221])
 {
@@ -58,10 +59,12 @@ void b_onestagepdf_lag(const double X[221], double m, double s, double l, double
     Y[k] = b_y;
   }
 }
+#endif
 
 /*
  * function Y=onestagepdf_lag(X,m,s,l)
  */
+#ifdef _OLD_MATLAB_CODE
 void c_onestagepdf_lag(const double X[2201], double m, double s, double l,
   double Y[2201])
 {
@@ -96,10 +99,12 @@ void c_onestagepdf_lag(const double X[2201], double m, double s, double l,
     Y[k] = b_y;
   }
 }
+#endif
 
 /*
  * function Y=onestagepdf_lag(X,m,s,l)
  */
+#ifdef _OLD_MATLAB_CODE
 void d_onestagepdf_lag(const double X[22001], double m, double s, double l,
   double Y[22001])
 {
@@ -134,7 +139,7 @@ void d_onestagepdf_lag(const double X[22001], double m, double s, double l,
     Y[k] = b_y;
   }
 }
-
+#endif
 
 double waldlag_loglikelihood(const gsl_vector *v, void *params)
 {
@@ -154,7 +159,7 @@ double waldlag_loglikelihood(const gsl_vector *v, void *params)
 
 	double Y[266];
 
-	waldlagpdf(data, m, s, l, Y);
+	waldlagpdf(data, m, s, l, Y, 266);
 	//onestagepdf_lag(data, m, s, l, Y);
 
 	double loglikelihood = 0;
@@ -165,21 +170,23 @@ double waldlag_loglikelihood(const gsl_vector *v, void *params)
 	return penalty - loglikelihood;
 }
 
-void waldlagpdf(const double X[266], double mu, double s, double l, double Y[266])
+void waldlagpdf(const double X[266], double mu, double s, double l, double Y[266], int size_XY)
 {
 	double a, b;
-	for (int i = 0; i < 266; i++) {
+	for (int i = 0; i < size_XY; i++) {
 		a = 1.0 / (s*pow(2 * M_PI  * pow(X[i] - l, 3.0), 0.5));
 		b = (pow(mu*(X[i] - l) - 1, 2)) / (2.0 * s * s * (X[i] - l));
 		Y[i] = a*exp(-b);
 		if (Y[i] == 0)
-			Y[i] = 2.2250738585072014E-308;
+			//Y[i] = 2.2250738585072014E-308;
+			Y[i] = DBL_MIN;
 	}
 }
 
 /*
  * function Y=onestagepdf_lag(X,m,s,l)
  */
+#ifdef _OLD_MATLAB_CODE
 void onestagepdf_lag(const double X[266], double m, double s, double l, double
                      Y[266])
 {
@@ -214,5 +221,6 @@ void onestagepdf_lag(const double X[266], double m, double s, double l, double
     Y[k] = b_y;
   }
 }
+#endif
 
 /* End of code generation (onestagepdf_lag.c) */

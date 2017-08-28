@@ -26,6 +26,8 @@
 
 #define _GSL_MINIMIZE
 #define _VERBOSE
+#define _CONV2WALD
+//#define _PARALLEL_SEEDS
 
 /* Type Definitions */
 #ifndef typedef_cell_wrap_3
@@ -111,6 +113,7 @@ void IMT_analysis_April2017(const char *model)
   double b_p[2];
 
   double pd[32];
+  /*
   static const double dv34[3] = { 0.027593515034192811, 0.043688113214883209, 0.67839610301742326 };
   static const double dv35[3] = { 0.027593515034192811, 0.043688113214883209, 1.3567922060348465 };
   static const double dv36[3] = { 0.027593515034192811, 0.043688113214883209, 2.0351883090522698 };
@@ -138,6 +141,8 @@ void IMT_analysis_April2017(const char *model)
   static const double dv58[3] = { 0.082780545102578429, 0.17475245285953284, 0.67839610301742326 };
   static const double dv59[3] = { 0.082780545102578429, 0.17475245285953284, 1.3567922060348465 };
   static const double dv60[3] = { 0.082780545102578429, 0.17475245285953284, 2.0351883090522698 };
+  */
+
 
   cell_wrap_3 pcell[9];
   double c_P[180];
@@ -336,6 +341,9 @@ void IMT_analysis_April2017(const char *model)
 	/* optimize parameters */
 	double optimizedParams[27][3];
 	double le[27];
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (seedIdx = 0; seedIdx < 27; seedIdx++) {
 
 	  printf("i = %d\n", 1 + seedIdx);
@@ -394,7 +402,7 @@ void IMT_analysis_April2017(const char *model)
 		  }
 
 		  printf("%5d %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-			  iter,
+			  (int)iter,
 			  gsl_vector_get(s->x, 0),
 			  gsl_vector_get(s->x, 1),
 			  gsl_vector_get(s->x, 2),
@@ -512,8 +520,11 @@ void IMT_analysis_April2017(const char *model)
 	/* optimize parameters */
 	  double optimizedParams[27][3];
 	  double le[27];
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (seedIdx = 0; seedIdx < 16; seedIdx++) {
-		printf("i=%d\n", 1.0 + seedIdx);
+		printf("i=%d\n", 1 + seedIdx);
 		printf("  P=[%f %f]\n", paramSeeds[seedIdx][0], paramSeeds[seedIdx][1]);
 
 		
@@ -565,7 +576,7 @@ void IMT_analysis_April2017(const char *model)
 		  }
 
 		  printf("%5d %.17f %.17f f() = %.17f size = %.3f\n",
-			  iter,
+			  (int)iter,
 			  gsl_vector_get(s->x, 0),
 			  gsl_vector_get(s->x, 1),
 			  s->fval, size);
@@ -607,14 +618,14 @@ void IMT_analysis_April2017(const char *model)
 	/* find the best optimized parameter set for all starting seeds tried */
 	double maxLikelihood = 0;
 	int ind_ld = 0;
-	for (int i = 0; i < 27; i++) {
+	for (int i = 0; i < 16; i++) {
 		if (ld[i] < maxLikelihood) {
 			maxLikelihood = ld[i];
 			ind_ld = i;
 		}
 	}
 
-	printf("max_ld=%f row_ld=%f\n", maxLikelihood, ind_ld);
+	printf("max_ld=%f row_ld=%d\n", maxLikelihood, ind_ld);
 	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0], optimizedParams[ind_ld][1]);
   }
 
@@ -706,6 +717,9 @@ void IMT_analysis_April2017(const char *model)
 	double optimizedParams[27][3];
 	double le[27];
 
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (seedIdx = 0; seedIdx < 27; seedIdx++) {
 
 		printf("i=%d\n", 1 + seedIdx);
@@ -765,7 +779,7 @@ void IMT_analysis_April2017(const char *model)
 		  }
 
 		  printf("%5d %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-			  iter,
+			  (int)iter,
 			  gsl_vector_get(s->x, 0),
 			  gsl_vector_get(s->x, 1),
 			  gsl_vector_get(s->x, 2),
@@ -795,7 +809,7 @@ void IMT_analysis_April2017(const char *model)
 	  printf("  p=[%f %f %f]\n", optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2]);
 
       //onestagepdf_lag(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], l);
-	  waldlagpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], l);
+	  waldlagpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], l, 266);
 
 
 	  /* calculate the log likelihood for our best fit */
@@ -933,6 +947,9 @@ void IMT_analysis_April2017(const char *model)
     /* create a matrix of unique parameter choices for the cell cycle */
     /* 'IMT_analysis_April2017:594' P = zeros(length(id),4); */
     /* 'IMT_analysis_April2017:595' for ii = 1:length(id) */
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
       /* 'IMT_analysis_April2017:596' P(ii,:) = [pcell{id(ii,1)},pcell{id(ii,2)}]; */
       for (itmp = 0; itmp < 2; itmp++) {
@@ -954,6 +971,9 @@ void IMT_analysis_April2017(const char *model)
     /* 'IMT_analysis_April2017:609' options = statset('MaxIter',10000, 'MaxFunEvals',10000,'TolFun',1e-3,'TolX',1e-3,'TolTypeFun','rel', 'TolTypeX', 'abs'); */
     /* 'IMT_analysis_April2017:610' flag=zeros(length(id),1); */
     /* 'IMT_analysis_April2017:611' for i=1:length(id) */
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
       /* 'IMT_analysis_April2017:612' fprintf('i=%f\n',i); */
       //d_cfprintf(1.0 + (double)emgfitnomle);
@@ -1050,7 +1070,7 @@ void IMT_analysis_April2017(const char *model)
 		  }
 
 		  printf("%5d %.17f %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-			  iter,
+			  (int)iter,
 			  gsl_vector_get(s->x, 0),
 			  gsl_vector_get(s->x, 1),
 			  gsl_vector_get(s->x, 2),
@@ -1081,13 +1101,18 @@ void IMT_analysis_April2017(const char *model)
 
 
       /* 'IMT_analysis_April2017:639' [l,hp(i),flag(i),E(i)]=convolv_2invG_adapt_nov(data,p(1),p(2),p(3),p(4),.01); */
-      b_convolv_2invG_adapt_nov(c_p[0], c_p[1], c_p[2], c_p[3], l, &mtmp, &flag, &E);
+
+#ifdef _CONV2WALD
+	  conv2waldpdf(data, c_p[0], c_p[1], c_p[2], c_p[3], l, 0.01, 1, 266);
+#else
+	  b_convolv_2invG_adapt_nov(c_p[0], c_p[1], c_p[2], c_p[3], l, &mtmp, &flag, &E);
+#endif
 
       /* 'IMT_analysis_April2017:640' l=sum(log(l)); */
       /* 'IMT_analysis_April2017:641' ld(i)=l; */
       /* 'IMT_analysis_April2017:642' fprintf('  l=%f hp=%f flag=%f E=%f\n\n',l,hp(i),flag(i),E(i)); */
       b_log(l);
-	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), mtmp, flag, E);
+	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), 42, 42, 42);
     }
 
     /*  we previously optimized with a larger step size, recalculate with */
@@ -1096,10 +1121,17 @@ void IMT_analysis_April2017(const char *model)
 
     /* 'IMT_analysis_April2017:648' ld_true=zeros(length(ld),1); */
     /* 'IMT_analysis_April2017:649' for i=1:length(ld) */
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
       /* 'IMT_analysis_April2017:650' [l,hp_true(i),flag_true(i),E_true(i)]=convolv_2invG_adapt_nov(data,pd(i,1),pd(i,2),pd(i,3),pd(i,4),.001); */
-      c_convolv_2invG_adapt_nov(b_pd[emgfitnomle], b_pd[45 + emgfitnomle], b_pd
-        [90 + emgfitnomle], b_pd[135 + emgfitnomle], l, &mtmp, &flag, &E);
+#ifdef _CONV2WALD
+		conv2waldpdf(data, b_pd[emgfitnomle], b_pd[45 + emgfitnomle], b_pd[90 + emgfitnomle], b_pd[135 + emgfitnomle], l, 0.001, 1, 266);
+#else
+		c_convolv_2invG_adapt_nov(b_pd[emgfitnomle], b_pd[45 + emgfitnomle], b_pd
+			[90 + emgfitnomle], b_pd[135 + emgfitnomle], l, &mtmp, &flag, &E);
+#endif
 
       /* 'IMT_analysis_April2017:651' ld_true(i)=sum(log(l)); */
       b_log(l);
@@ -1248,6 +1280,9 @@ void IMT_analysis_April2017(const char *model)
     /*  is pathological. this needs fixed!!!! */
     /*  WARNING WARNING WARNING */
     /* 'IMT_analysis_April2017:863' for i=1:length(P)-3 */
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (emgfitnomle = 0; emgfitnomle < 17; emgfitnomle++) {
       /* 'IMT_analysis_April2017:864' fprintf('i=%f\n',i); */
       //d_cfprintf(1.0 + (double)emgfitnomle);
@@ -1321,8 +1356,8 @@ void IMT_analysis_April2017(const char *model)
 			  printf("converged to minimum at\n");
 		  }
 
-		  printf("%5d %.17f %.17f %.17f %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-			  iter,
+		  printf("%5d %.8f %.8f %.8f %.8f %.8f %.8f f() = %.17f size = %.3f\n",
+			  (int)iter,
 			  gsl_vector_get(s->x, 0),
 			  gsl_vector_get(s->x, 1),
 			  gsl_vector_get(s->x, 2),
@@ -1359,15 +1394,18 @@ void IMT_analysis_April2017(const char *model)
 
       /* confint(:,:,i)=conf1(:); */
       /* 'IMT_analysis_April2017:876' [l,hp(i),flag(i),E(i)]=convolv_3invG_nov(data,p(1),p(2),p(3),p(4),p(5),p(6),.01); */
-      b_convolv_3invG_nov(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5], l,
-                          &mtmp, &flag, &E);
+      //b_convolv_3invG_nov(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5], l, &mtmp, &flag, &E);
+	  convolv3waldpdf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5], data, l, 266, 0.01);
 
       /* 'IMT_analysis_April2017:877' l=sum(log(l)); */
       /* 'IMT_analysis_April2017:878' ld(i)=l; */
       /* 'IMT_analysis_April2017:879' fprintf('  l=%f hp=%f flag=%f E=%f\n\n',l,hp(i),flag(i),E(i)); */
       b_log(l);
       //u_cfprintf(sum(l), mtmp, flag, E);
-	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), mtmp, flag, E);
+	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), 42, 42, 42);
+
+
+	  //exit(1);
     }
 
     /*  we previously optimized with a larger step size, recalculate with */
@@ -1378,13 +1416,13 @@ void IMT_analysis_April2017(const char *model)
 
     /* 'IMT_analysis_April2017:885' ld_true=zeros(length(ld),1); */
     /* 'IMT_analysis_April2017:886' for i=1:length(ld) */
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
     for (emgfitnomle = 0; emgfitnomle < 20; emgfitnomle++) {
       /* 'IMT_analysis_April2017:887' [l,hp_true(i),flag_true(i),E_true(i)]=convolv_3invG_nov(data,pd(i,1),pd(i,2),pd(i,3),pd(i,4),pd(i,5),pd(i,6),.001); */
-      c_convolv_3invG_nov(c_pd[emgfitnomle], c_pd[20 + emgfitnomle], c_pd[40 +
-                          emgfitnomle], c_pd[60 + emgfitnomle], c_pd[80 +
-                          emgfitnomle], c_pd[100 + emgfitnomle], l, &mtmp, &flag,
-                          &E);
-
+      //c_convolv_3invG_nov(c_pd[emgfitnomle], c_pd[20 + emgfitnomle], c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle], c_pd[80 + emgfitnomle], c_pd[100 + emgfitnomle], l, &mtmp, &flag, &E);
+		convolv3waldpdf(c_pd[emgfitnomle], c_pd[20 + emgfitnomle], c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle], c_pd[80 + emgfitnomle], c_pd[100 + emgfitnomle], data, l, 266, 0.001);
       /* 'IMT_analysis_April2017:888' ld_true(i)=sum(log(l)); */
       b_log(l);
       c_flag[emgfitnomle] = sum(l);

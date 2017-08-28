@@ -24,6 +24,7 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void b_convolv_2invG_nov(const emxArray_real_T *t, double m1, double s1,
   double m2, double s2, double h, emxArray_real_T *P, double *flag);
 extern void c_convolv_2invG_nov(double m1, double s1, double m2, double s2,
@@ -32,6 +33,7 @@ extern void convolv_2invG_nov(double m1, double s1, double m2, double s2, double
   P[221], double *flag);
 extern void d_convolv_2invG_nov(const double t[22001], double m1, double s1,
   double m2, double s2, double P[22001], double *flag);
+#endif
 
 #endif
 

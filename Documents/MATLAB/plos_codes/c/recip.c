@@ -19,6 +19,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 creal_T recip(const creal_T y)
 {
   creal_T z;
@@ -60,5 +61,6 @@ creal_T recip(const creal_T y)
 
   return z;
 }
+#endif
 
 /* End of code generation (recip.c) */

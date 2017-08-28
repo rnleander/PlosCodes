@@ -68,4 +68,5 @@ double gp_max_fixed(double m, double s)
 	return largest;
 }
 
+
 /* End of code generation (gp_max.c) */

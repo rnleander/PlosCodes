@@ -20,6 +20,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_rdivide(const emxArray_real_T *y, emxArray_real_T *z)
 {
   int i2;
@@ -32,10 +33,12 @@ void b_rdivide(const emxArray_real_T *y, emxArray_real_T *z)
     z->data[i2] = 1.0 / y->data[i2];
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void c_rdivide(const emxArray_real_T *x, const emxArray_real_T *y,
                emxArray_real_T *z)
 {
@@ -49,10 +52,12 @@ void c_rdivide(const emxArray_real_T *x, const emxArray_real_T *y,
     z->data[i3] = x->data[i3] / y->data[i3];
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void rdivide(const creal_T x_data[], const int x_size[1], const creal_T y_data[],
              creal_T z_data[], int z_size[1])
 {
@@ -118,5 +123,6 @@ void rdivide(const creal_T x_data[], const int x_size[1], const creal_T y_data[]
     }
   }
 }
+#endif
 
 /* End of code generation (rdivide.c) */

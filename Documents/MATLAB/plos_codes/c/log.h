@@ -25,7 +25,9 @@
 
 /* Function Declarations */
 extern void b_log(double x[266]);
+#ifdef _OLD_MATLAB_CODE
 extern void c_log(emxArray_real_T *x);
+#endif
 
 #endif
 

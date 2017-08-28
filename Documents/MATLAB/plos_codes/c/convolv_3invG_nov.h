@@ -26,13 +26,22 @@
 
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void b_convolv_3invG_nov(double m1, double s1, double m2, double s2,
   double m3, double s3, double P[266], double *h, double *flag, double *E);
 extern void c_convolv_3invG_nov(double m1, double s1, double m2, double s2,
   double m3, double s3, double P[266], double *h, double *flag, double *E);
-extern double convolv_3invG_nov_loglikelihood(const gsl_vector *v, void *params);
+#endif
+
+#ifdef _OLD_MATLAB_CODE
 extern void convolv_3invG_nov(double m1, double s1, double m2, double s2, double
   m3, double s3, double P[266]);
+#endif
+
+extern double convolv_3invG_nov_loglikelihood(const gsl_vector *v, void *params);
+
+extern void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, double s3, const double X[266], double Y[266], int size_XY, double h);
+
 
 #endif
 

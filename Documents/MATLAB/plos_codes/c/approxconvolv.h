@@ -24,6 +24,7 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void approxconvolv(const double z[2201], const double y[2201], const
   double t[266], const double x[2201], double P0[266], double *logP0);
 extern void b_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y,
@@ -39,6 +40,7 @@ extern void f_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y,
   const double t[266], const emxArray_real_T *x, double P0[266], double *logP0);
 extern void g_approxconvolv(const emxArray_real_T *z, const emxArray_real_T *y,
   const double t[266], const emxArray_real_T *x, double P0[266], double *logP0);
+#endif
 
 
 extern void approxconvolv_replacement(const double z[], const double y[], const double X

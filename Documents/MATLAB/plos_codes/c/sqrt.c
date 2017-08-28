@@ -21,6 +21,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_sqrt(creal_T *x)
 {
   double xr;
@@ -94,5 +95,6 @@ void b_sqrt(creal_T *x)
   x->re = absxi;
   x->im = xr;
 }
+#endif
 
 /* End of code generation (sqrt.c) */

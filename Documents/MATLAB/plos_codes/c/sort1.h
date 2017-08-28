@@ -24,8 +24,11 @@
 #include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void b_sort(double x[3], int idx[3]);
 extern void sort(double x[2], int idx[2]);
+#endif
+
 
 #endif
 

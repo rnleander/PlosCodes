@@ -23,7 +23,7 @@
 #include "float.h"
 #include "math.h"
 
-#define _VERBOSE
+//#define _VERBOSE
 
 
 /* Function Definitions */
@@ -31,6 +31,7 @@
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void b_onestagepdf2(const double t[2201], double mu, double s, double Y[2201])
 {
   int k;
@@ -75,11 +76,12 @@ void b_onestagepdf2(const double t[2201], double mu, double s, double Y[2201])
   for (int i = 0; i < 2201; i++) {
 	  if (i % 8 == 0)
 		  printf("\n");
-	  printf("%f ", Y[i]);
+	  printf("%.17f ", Y[i]);
   }
   printf("\n\n");
 #endif
 }
+#endif
 
 /*
  * function Y=onestagepdf2(t,mu,s)
@@ -252,6 +254,7 @@ void d_onestagepdf2(const emxArray_real_T *t, double mu, double s,
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void e_onestagepdf2(const double t[22001], double mu, double s, double Y[22001])
 {
   int k;
@@ -291,10 +294,12 @@ void e_onestagepdf2(const double t[22001], double mu, double s, double Y[22001])
     Y[k] = b_y;
   }
 }
+#endif
 
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void f_onestagepdf2(const double t[221], double mu, double s, double Y[221])
 {
   int k;
@@ -334,10 +339,12 @@ void f_onestagepdf2(const double t[221], double mu, double s, double Y[221])
     Y[k] = b_y;
   }
 }
+#endif
 
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void g_onestagepdf2(const double t[221], double mu, double s, double Y[221])
 {
   int k;
@@ -377,10 +384,12 @@ void g_onestagepdf2(const double t[221], double mu, double s, double Y[221])
     Y[k] = b_y;
   }
 }
+#endif
 
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void h_onestagepdf2(const emxArray_real_T *t, double mu, double s,
                     emxArray_real_T *Y)
 {
@@ -504,10 +513,12 @@ void h_onestagepdf2(const emxArray_real_T *t, double mu, double s,
 
   emxFree_real_T(&b);
 }
+#endif
 
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void i_onestagepdf2(const double t[2201], double mu, double s, double Y[2201])
 {
   int k;
@@ -547,10 +558,12 @@ void i_onestagepdf2(const double t[2201], double mu, double s, double Y[2201])
     Y[k] = b_y;
   }
 }
+#endif
 
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void j_onestagepdf2(const double t[22001], double mu, double s, double Y[22001])
 {
   int k;
@@ -590,16 +603,7 @@ void j_onestagepdf2(const double t[22001], double mu, double s, double Y[22001])
     Y[k] = b_y;
   }
 }
-
-
-
-
-
-
-
-
-
-
+#endif
 
 
 double wald_loglikelihood(const gsl_vector *v, void *params)
@@ -636,12 +640,14 @@ void waldpdf(const double X[], double mu, double s, double Y[], int size_XY)
 
 	double a, b;
 	for (int i = 0; i < size_XY; i++) {
-		a = 1.0 / (s*pow(2 * M_PI  * pow(X[i], 3.0), 0.5));
-		b = (pow(mu*X[i] - 1, 2)) / (2.0 * s * s * X[i]);
+		//a = 1.0 / (s*pow(2 * M_PI  * pow(X[i], 3.0), 0.5));
+		a = 1.0 / (s*pow(6.2831853071795862  * pow(X[i], 3.0), 0.5));
+		//b = (pow(mu*X[i] - 1, 2)) / (2.0 * s * s * X[i]);
+		b = (pow(mu*X[i] - 1.0, 2.0)) / (2.0 * s * s * X[i]);
 		Y[i] = a*exp(-b);
 		if (Y[i] == 0)
 			Y[i] = 2.2250738585072014E-308;
-			//Y[i] = -DBL_MAX;
+			//Y[i] = DBL_MIN;
 
 		if (isnan(Y[i]))
 			Y[i] = 2.2250738585072014E-308;
@@ -652,7 +658,7 @@ void waldpdf(const double X[], double mu, double s, double Y[], int size_XY)
 	for (int i = 0; i < size_XY; i++) {
 		if (i % 8 == 0)
 			printf("\n");
-		printf("%f ", Y[i]);
+		printf("%.17f ", Y[i]);
 	}
 	printf("\n\n");
 #endif
@@ -664,6 +670,7 @@ void waldpdf(const double X[], double mu, double s, double Y[], int size_XY)
 /*
  * function Y=onestagepdf2(t,mu,s)
  */
+#ifdef _OLD_MATLAB_CODE
 void onestagepdf2(const double t[266], double mu, double s, double Y[266])
 {
   int k;
@@ -703,5 +710,6 @@ void onestagepdf2(const double t[266], double mu, double s, double Y[266])
     Y[k] = b_y;
   }
 }
+#endif
 
 /* End of code generation (onestagepdf2.c) */

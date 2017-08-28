@@ -19,6 +19,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_sort(double x[3], int idx[3])
 {
   boolean_T p;
@@ -104,10 +105,12 @@ void b_sort(double x[3], int idx[3])
     }
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void sort(double x[2], int idx[2])
 {
   boolean_T p;
@@ -129,5 +132,6 @@ void sort(double x[2], int idx[2])
     x[1] = tmp;
   }
 }
+#endif
 
 /* End of code generation (sort1.c) */

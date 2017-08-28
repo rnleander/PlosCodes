@@ -22,6 +22,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_power(const double a[2], double y[2])
 {
   int k;
@@ -29,10 +30,12 @@ void b_power(const double a[2], double y[2])
     y[k] = rt_powd_snf(a[k], 3.0);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void c_power(const double a[2], double y[2])
 {
   int k;
@@ -40,10 +43,12 @@ void c_power(const double a[2], double y[2])
     y[k] = rt_powd_snf(a[k], 0.5);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void d_power(const double a[2201], double y[2201])
 {
   int k;
@@ -51,6 +56,7 @@ void d_power(const double a[2201], double y[2201])
     y[k] = rt_powd_snf(a[k], 2.0);
   }
 }
+#endif
 
 /*
  *
@@ -70,6 +76,7 @@ void e_power(const emxArray_real_T *a, emxArray_real_T *y)
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void f_power(const double a[22001], double y[22001])
 {
   int k;
@@ -77,10 +84,12 @@ void f_power(const double a[22001], double y[22001])
     y[k] = rt_powd_snf(a[k], 2.0);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void g_power(const double a[3], double y[3])
 {
   int k;
@@ -88,10 +97,12 @@ void g_power(const double a[3], double y[3])
     y[k] = rt_powd_snf(a[k], 2.0);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void h_power(const double a[3], double y[3])
 {
   int k;
@@ -99,10 +110,12 @@ void h_power(const double a[3], double y[3])
     y[k] = rt_powd_snf(a[k], 3.0);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void i_power(const double a[3], double y[3])
 {
   int k;
@@ -110,10 +123,12 @@ void i_power(const double a[3], double y[3])
     y[k] = rt_powd_snf(a[k], 0.5);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void j_power(const double a[221], double y[221])
 {
   int k;
@@ -121,10 +136,12 @@ void j_power(const double a[221], double y[221])
     y[k] = rt_powd_snf(a[k], 2.0);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void k_power(const emxArray_real_T *a, emxArray_real_T *y)
 {
   unsigned int a_idx_0;
@@ -137,10 +154,12 @@ void k_power(const emxArray_real_T *a, emxArray_real_T *y)
     y->data[k] = rt_powd_snf(a->data[k], 3.0);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void l_power(const emxArray_real_T *a, emxArray_real_T *y)
 {
   unsigned int a_idx_0;
@@ -153,10 +172,12 @@ void l_power(const emxArray_real_T *a, emxArray_real_T *y)
     y->data[k] = sqrt(a->data[k]);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void m_power(const emxArray_real_T *a, emxArray_real_T *y)
 {
   unsigned int a_idx_0;
@@ -169,10 +190,12 @@ void m_power(const emxArray_real_T *a, emxArray_real_T *y)
     y->data[k] = a->data[k] * a->data[k];
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void power(const double a[2], double y[2])
 {
   int k;
@@ -180,5 +203,6 @@ void power(const double a[2], double y[2])
     y[k] = rt_powd_snf(a[k], 2.0);
   }
 }
+#endif
 
 /* End of code generation (power.c) */

@@ -25,20 +25,23 @@
 #include "gsl/gsl_multimin.h"
 
 /* Function Declarations */
+#ifdef _OLD_MATLAB_CODE
 extern void b_onestagepdf_lag(const double X[221], double m, double s, double l,
   double Y[221]);
 extern void c_onestagepdf_lag(const double X[2201], double m, double s, double l,
   double Y[2201]);
 extern void d_onestagepdf_lag(const double X[22001], double m, double s, double
   l, double Y[22001]);
+#endif
 
 extern double waldlag_loglikelihood(const gsl_vector *v, void *params);
 
-extern void waldlagpdf(const double X[266], double mu, double s, double l, double Y[266]);
+extern void waldlagpdf(const double X[266], double mu, double s, double l, double Y[266], int size_XY);
 
-
+#ifdef _OLD_MATLAB_CODE
 extern void onestagepdf_lag(const double X[266], double m, double s, double l,
   double Y[266]);
+#endif
 
 #endif
 

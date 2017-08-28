@@ -30,6 +30,7 @@ void b_log(double x[266])
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void c_log(emxArray_real_T *x)
 {
   int nx;
@@ -39,5 +40,5 @@ void c_log(emxArray_real_T *x)
     x->data[k] = log(x->data[k]);
   }
 }
-
+#endif
 /* End of code generation (log.c) */

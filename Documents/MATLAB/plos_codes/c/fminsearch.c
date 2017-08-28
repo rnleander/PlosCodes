@@ -22,14 +22,17 @@
 #include "convolv_3invG_nov.h"
 
 /* Function Declarations */
+/*
 static void b_sort_idx_single_insert(const double fv[7], int idx[7]);
 static void sort_idx_single_insert(const double fv[5], int idx[5]);
+*/
 
 /* Function Definitions */
 
 /*
  *
  */
+/*
 static void b_sort_idx_single_insert(const double fv[7], int idx[7])
 {
   int k;
@@ -46,6 +49,7 @@ static void b_sort_idx_single_insert(const double fv[7], int idx[7])
 /*
  *
  */
+/*
 static void sort_idx_single_insert(const double fv[5], int idx[5])
 {
   int k;
@@ -58,10 +62,12 @@ static void sort_idx_single_insert(const double fv[5], int idx[5])
     }
   }
 }
+*/
 
 /*
  *
  */
+/*
 double b_fminsearch(double x[2])
 {
   int k;
@@ -375,10 +381,12 @@ double b_fminsearch(double x[2])
 
   return fv[idx[0] - 1];
 }
+*/
 
 /*
  *
  */
+/*
 double c_fminsearch(double x[3])
 {
   int k;
@@ -704,10 +712,12 @@ double c_fminsearch(double x[3])
 
   return fv[idx[0] - 1];
 }
+*/
 
 /*
  *
  */
+/*
 double d_fminsearch(double x[4])
 {
   double unusedExpr[266];
@@ -1008,10 +1018,12 @@ double d_fminsearch(double x[4])
 
   return fv[idx[0] - 1];
 }
+*/
 
 /*
  *
  */
+/*
 double e_fminsearch(double x[6])
 {
   double unusedExpr[266];
@@ -1312,10 +1324,12 @@ double e_fminsearch(double x[6])
 
   return fv[idx[0] - 1];
 }
+*/
 
 /*
  *
  */
+/*
 double fminsearch(double x[3])
 {
   int k;
@@ -1641,9 +1655,10 @@ double fminsearch(double x[3])
 
   return fv[idx[0] - 1];
 }
+*/
 
 
-
+/*
 double fminsearch_generalized(double x[3], void (*pdf)(), const double data[266])
 {
 	int k;
@@ -1974,5 +1989,6 @@ double fminsearch_generalized(double x[3], void (*pdf)(), const double data[266]
 
 	return fv[idx[0] - 1];
 }
+*/
 
 /* End of code generation (fminsearch.c) */

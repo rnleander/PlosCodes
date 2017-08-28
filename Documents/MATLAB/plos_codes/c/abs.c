@@ -19,6 +19,7 @@
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void b_abs(const double x[2], double y[2])
 {
   int k;
@@ -26,10 +27,12 @@ void b_abs(const double x[2], double y[2])
     y[k] = fabs(x[k]);
   }
 }
+#endif
 
 /*
  *
  */
+#ifdef _OLD_MATLAB_CODE
 void c_abs(const double x[3], double y[3])
 {
   int k;
@@ -37,5 +40,5 @@ void c_abs(const double x[3], double y[3])
     y[k] = fabs(x[k]);
   }
 }
-
+#endif
 /* End of code generation (abs.c) */
